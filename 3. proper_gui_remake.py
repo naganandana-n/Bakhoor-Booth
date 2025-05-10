@@ -1214,9 +1214,13 @@ class ThariBakhoorApp(tk.Tk):
         exit_btn.pack(pady=20)
         
     def exit_safe_mode(self):
-        self.safe_mode_frame.destroy()
+        # Clear everything on screen
+        for widget in self.winfo_children():
+            widget.destroy()
+
         self.running = True
         self.person_running = False
+
         self.load_main_screen()
 
 if __name__ == "__main__":
