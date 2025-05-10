@@ -115,6 +115,7 @@ class ThariBakhoorApp(tk.Tk):
     def load_logo(self):
         try:
             image1 = Image.open("static/logo.png")
+            image1 = image1.resize((300, 100), Image.ANTIALIAS)  # Resize to fit the UI
             logo_image = ImageTk.PhotoImage(image1)
             logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
             logo_label.image = logo_image
