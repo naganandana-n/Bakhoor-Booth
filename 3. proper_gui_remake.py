@@ -1190,7 +1190,7 @@ class ThariBakhoorApp(tk.Tk):
 
         for widget in self.winfo_children():
             # Keep the logo and time label
-            if widget not in [self.logo_label, self.time_label]:
+            if widget not in [self.logo_label.image, self.time_label]:
                 widget.destroy()
 
         # Show Safe Mode screen
