@@ -66,7 +66,7 @@ class ThariBakhoorApp(tk.Tk):
     def splash_screen(self):
         # Load the image
         try:
-            image = Image.open("/home/Arbitrary/Downloads/Assets/Splash.jpeg")
+            image = Image.open("static/splash.png")
             tk_image = ImageTk.PhotoImage(image)
             self.logo_label = tk.Label(self, image=tk_image, bg="#f4e9e1")
             self.logo_label.image = tk_image
@@ -114,7 +114,7 @@ class ThariBakhoorApp(tk.Tk):
         
     def load_logo(self):
         try:
-            image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.jpeg")
+            image1 = Image.open("static/logo.png")
             logo_image = ImageTk.PhotoImage(image1)
             logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
             logo_label.image = logo_image
