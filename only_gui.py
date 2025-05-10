@@ -479,20 +479,20 @@ class ThariBakhoorApp(tk.Tk):
             self.after(2000, self.update_waiting_label)
 
     def start_temperature_check(self, target_temp):
-    if ENABLE_HARDWARE:
-        actual_heat_value = self.check_heat_value()
-        print(actual_heat_value)
+        if ENABLE_HARDWARE:
+            actual_heat_value = self.check_heat_value()
+            print(actual_heat_value)
 
-        while True:
-            temperature = self.read_temperature(self.pi, self.sensor, target_temp)
-            if temperature > target_temp:
-                break
-            time.sleep(1)
+            while True:
+                temperature = self.read_temperature(self.pi, self.sensor, target_temp)
+                if temperature > target_temp:
+                    break
+                time.sleep(1)
 
-        self.update_waiting_label()
-    else:
-        print("[SIMULATION] Skipping temperature check (GUI-only mode)")
-        self.update_waiting_label()
+            self.update_waiting_label()
+        else:
+            print("[SIMULATION] Skipping temperature check (GUI-only mode)")
+            self.update_waiting_label()
 
     def update_waiting_label(self):
         # Updates the label when the temperature in the preheating screen is met
