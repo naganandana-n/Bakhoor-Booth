@@ -1223,9 +1223,10 @@ class ThariBakhoorApp(tk.Tk):
         self.person_running = False
 
         self.load_main_screen()
+        for widget in self.winfo_children():
+            print(widget)
 
 if __name__ == "__main__":
     app = ThariBakhoorApp()
     app.mainloop()
-    for widget in self.winfo_children():
-        print(widget)
+    
