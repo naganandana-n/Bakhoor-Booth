@@ -1,83 +1,55 @@
-from cgitb import text
 import time
 import tkinter as tk
-from tkinter import BUTT, CENTER, ttk, messagebox
+from tkinter import ttk, messagebox
 from datetime import datetime
-from turtle import bgcolor
 from PIL import Image, ImageTk
 import threading
-#Adding the Pi code:
-import pigpio
-import RPi.GPIO as GPIO
-import math
-import atexit
 
-from hx711 import HX711
-from adafruit_servokit import ServoKit
+ENABLE_HARDWARE = False  # Set to True when running on Raspberry Pi with full setup
+
+if ENABLE_HARDWARE:
+    import pigpio
+    import RPi.GPIO as GPIO
+    import atexit
+    from hx711 import HX711
+    from adafruit_servokit import ServoKit
 
 
 class ThariBakhoorApp(tk.Tk):
-    def _init_(self, *args, **kwargs):
-        super()._init_(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.title("Thari Bakhoor")
-        self.pi = pigpio.pi()
-        GPIO.setmode(GPIO.BCM)
+        if ENABLE_HARDWARE:
+            self.pi = pigpio.pi()
+            GPIO.setmode(GPIO.BCM)
+        
+            if not self.pi.connected:
+                self.destroy()
 
-        # Checks if the pigpio has access to the GPIO pins:
-        if not self.pi.connected:
-            self.destroy()
-                
-        GPIO.setmode(GPIO.BCM)
-                
-        # Setting up variables that will be used for comparing the values assigned in each screen (Custom , Person,Clothes, Surrounding)
-        # The values assigned in this are based on the person screen settings
-        self.assigned_heat = 3
-        self.assigned_speed = 3
-        self.assigned_time = 2
-        self.saved_time = 0.0
+            self.heater_ssr_pin = 4
+            self.door_ssr_pin = 17
+            self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
+            self.pi.set_mode(self.door_ssr_pin, pigpio.OUTPUT)
+            self.kit = ServoKit(channels=16)
+            self.fan_channels = list(range(16))
+            self.initialize_fans_0(self.kit, self.fan_channels)
 
-        # In targettemp,the 1st  value is used for cooldown check (targettemp[0])
-        #   targettemp[1] is used for pre-heaitng the heating element (100 degrees)
-        #   targettemp[2] is used to get the fans to wok for cooling down
-        #  
-        self.targettemp = [25, 30, 40]
-        #Define attributes for frames (args)
-        self.time_frame = None
-        self.heat_frame = None
-        self.speed_frame = None
-        self.button_panel_frame = None     
+            self.hx = HX711(dout_pin=18, pd_sck_pin=15)
+            self.initialize_weight()
 
-        # Initializing Sensor Pins
-        self.heater_ssr_pin = 4
-        self.door_ssr_pin = 17   
+            self.sensor = self.pi.spi_open(0, 1000000, 0)
+            self.read_temperature_average(self.pi, self.sensor, 3)
 
-        # Setting modes for GPIO pins:
-        self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
-        self.pi.set_mode(self.door_ssr_pin, pigpio.OUTPUT)
-
-        # Initialize the fans, PWM and Mosfet
-        self.kit = ServoKit(channels=16)
-        # fan_channels[0] is for the main 90 x 90 fan
-        self.fan_channels = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-        self.initialize_fans_0(self.kit, self.fan_channels)
-
-        # Initialize the load cells
-        self.hx = HX711(dout_pin=18, pd_sck_pin=15)
-        self.initialize_weight()
-
-        # Initialize the flag to indicate whether the thread should continue running
-        self.keep_running = True
-        self.weight_check_thread = None  # Define the thread attribute
-        self.running = True #Flag for user input in load_buttons function
-        self.person_running = False #Flag to start weigt person check below 150kg
-
-        # Initialize the MAX6675 temperature sensor
-        self.sensor =self.pi.spi_open(0,1000000,0)
-        # Can be removed read_average_temperature used for reading the iniial temperature
-        self.read_temperature_average(self.pi,self.sensor,3)
-
-        # Register the cleanup function with atexit
-        atexit.register(self.cleanup_gpio)
+            atexit.register(self.cleanup_gpio)
+        
+        else:
+            self.pi = None
+            self.kit = None
+            self.hx = None
+            self.sensor = None
+            self.heater_ssr_pin = None
+            self.door_ssr_pin = None
+            self.fan_channels = []
 
         self.geometry("600x1024")
         self.configure(bg="#f4e9e1")  # Set background color for the entire application
@@ -93,24 +65,29 @@ class ThariBakhoorApp(tk.Tk):
 
     def splash_screen(self):
         # Load the image
-        image = Image.open("/home/Arbitrary/Downloads/Assets/Splash.jpeg")
+        try:
+            image = Image.open("/home/Arbitrary/Downloads/Assets/Splash.jpeg")
 
-        # Convert the image to a Tkinter-compatible format
-        tk_image = ImageTk.PhotoImage(image)
+            # Convert the image to a Tkinter-compatible format
+            tk_image = ImageTk.PhotoImage(image)
 
-        # Create a Label widget to display the image
-        self.logo_label = tk.Label(self, image=tk_image, bg="#f4e9e1")  # Store the logo label as an instance variable
-        self.logo_label.image = tk_image  # Retain a reference to the image to prevent garbage collection
+            # Create a Label widget to display the image
+            self.logo_label = tk.Label(self, image=tk_image, bg="#f4e9e1")  # Store the logo label as an instance variable
+            self.logo_label.image = tk_image  # Retain a reference to the image to prevent garbage collection
+        except Exception as e:
+            print(f"Warning: Splash image could not be loaded: {e}")
+            self.logo_label = tk.Label(self, text="Thari Bakhoor", font=("Arial", 32), bg="#f4e9e1")
         self.logo_label.pack(expand=True)
-
-        # TO remove any smoke from the heating or ixing chamber
-        self.initialize_fans_100(self.kit, self.fan_channels)
+        # Only run fan purge if hardware is enabled
+        if ENABLE_HARDWARE:
+            self.initialize_fans_100(self.kit, self.fan_channels)
         # Simulate splash screen for 3 seconds
         self.after(3000, self.load_main_screen)
 
     def load_main_screen(self):
         # Stops all the fans
-        self.initialize_fans_0(self.kit, self.fan_channels)
+        if ENABLE_HARDWARE:
+            self.initialize_fans_0(self.kit, self.fan_channels)
 
         # Destroy splash screen widgets
         self.logo_label.destroy()
@@ -123,15 +100,19 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time()
         
         # Define the function to be run by the thread
-        self.start_weight_check_thread()
+        if ENABLE_HARDWARE:
+            self.start_weight_check_thread()
         
     def load_logo(self):
-        image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.jpeg")
-        
-        logo_image = ImageTk.PhotoImage(image1)
-        
-        logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")  # Set background color for the label
-        logo_label.image = logo_image
+        try:
+            image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.jpeg")
+            logo_image = ImageTk.PhotoImage(image1)
+            logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
+            logo_label.image = logo_image
+        except Exception as e:
+            print(f"Warning: Logo image not loaded: {e}")
+            logo_label = tk.Label(self, text="Thari Bakhoor", font=("Arial", 24, "bold"), bg="#f4e9e1")
+
         logo_label.pack(pady=20)
 
     def load_date_time(self):
@@ -170,7 +151,8 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons_frame.destroy()
         self.running = False
         self.person_running = True
-        self.start_person_150_check_thread()
+        if ENABLE_HARDWARE:
+            self.start_person_150_check_thread()
 
         # Load frames for Heat, Speed, and Time
         self.heat_frame = tk.Frame(self, bg="#f4e9e1")
@@ -429,14 +411,16 @@ class ThariBakhoorApp(tk.Tk):
         self.button_panel_frame.destroy()
         
         # Heating element is turned on. 
-        self.heater_on(self.pi, self.heater_ssr_pin)
+        if ENABLE_HARDWARE:
+            self.heater_on(self.pi, self.heater_ssr_pin)
         self.waiting_screen()
 
     # Autostart function that saved values to be used in the next screen
     def auto_start_save(self):
             self.running = False
             self.person_running = True
-            self.start_person_150_check_thread()
+            if ENABLE_HARDWARE:
+                self.start_person_150_check_thread()
             self.saved_time = time.time()
             print("AutoStart heat:", self.assigned_heat)
             print("Autostart Speed:", self.assigned_speed)
@@ -484,31 +468,31 @@ class ThariBakhoorApp(tk.Tk):
         self.main_label = tk.Label(self.wait_frame, text="Please wait, \nSystem heating up", bg="#f4e9e1", font=("DM Sans", 18, "bold"))
         self.main_label.grid(row=1, columnspan=5, pady=(0, 10))
 
-        # Convert target temperature to integer
-        target_temp = int(self.targettemp[1])
+        if ENABLE_HARDWARE:
+            # Convert target temperature to integer
+            target_temp = int(self.targettemp[1])
 
-        # Update the waiting label after 2 seconds
-        self.after(2000, lambda: self.start_temperature_check(target_temp))
+            # Update the waiting label after 2 seconds
+            self.after(2000, lambda: self.start_temperature_check(target_temp))
+        else:
+            # Simulate wait and skip temperature check
+            self.after(2000, self.update_waiting_label)
 
-    # Checks the temperature in the preheating screen
     def start_temperature_check(self, target_temp):
+    if ENABLE_HARDWARE:
         actual_heat_value = self.check_heat_value()
         print(actual_heat_value)
 
-        # Continuously check the temperature until it exceeds target_temp
         while True:
-            # Read the temperature
             temperature = self.read_temperature(self.pi, self.sensor, target_temp)
-            # Check if temperature exceeds target_temp
             if temperature > target_temp:
-                break  # Exit the loop if temperature exceeds target_temp
-            time.sleep(1)  # Wait for 1 second before checking again
+                break
+            time.sleep(1)
 
-        # Once temperature exceeds target_temp, update the waiting label
-        #self.main_label.config(text="Temperature reached.\nProceeding to next step...")
         self.update_waiting_label()
-
-        # Proceed to the next step here
+    else:
+        print("[SIMULATION] Skipping temperature check (GUI-only mode)")
+        self.update_waiting_label()
 
     def update_waiting_label(self):
         # Updates the label when the temperature in the preheating screen is met
@@ -520,8 +504,9 @@ class ThariBakhoorApp(tk.Tk):
         print("Pre-defined temp is:", self.assigned_heat)
         print("Pre-defined speed: ", self.assigned_speed)
         # Starts the fans as per the value assigned to them in their respective screen (Human, Clothes, Surrounding)
-        channel_duty_cycle = self.check_speed_value()
-        self.control_fans(self.kit, self.fan_channels, channel_duty_cycle)
+        if ENABLE_HARDWARE:
+            channel_duty_cycle = self.check_speed_value()
+            self.control_fans(self.kit, self.fan_channels, channel_duty_cycle)
 
         # Calculate min and max heat values
         min_heat = self.assigned_heat - 20
@@ -553,17 +538,18 @@ class ThariBakhoorApp(tk.Tk):
                 self.cooling_down_screen()
             else:
                 # Check temperature only if time remaining is not 0
-                temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[1])
-                if temperature is not None:
-                    if temperature >= min_heat and temperature <= max_heat and heater_on:
-                        self.heater_off(self.pi, self.heater_ssr_pin)  # Heater within acceptable range, turn it off
-                        heater_on = False
-                    elif temperature > max_heat and heater_on:
-                        self.heater_off(self.pi, self.heater_ssr_pin)  # Temperature exceeds max_heat, turn heater off
-                        heater_on = False
-                    elif temperature < min_heat and not heater_on:
-                        self.heater_on(self.pi, self.heater_ssr_pin)   # Temperature below min_heat, turn heater on
-                        heater_on = True
+                if ENABLE_HARDWARE:
+                    temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[1])
+                    if temperature is not None:
+                        if min_heat <= temperature <= max_heat and heater_on:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                            heater_on = False
+                        elif temperature > max_heat and heater_on:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                            heater_on = False
+                        elif temperature < min_heat and not heater_on:
+                            self.heater_on(self.pi, self.heater_ssr_pin)
+                            heater_on = True
 
                 time_remaining_label.after(1000, update_remaining_time, time_remaining_label)
 
@@ -578,12 +564,14 @@ class ThariBakhoorApp(tk.Tk):
     # The cooling down screen is used stop the fans, heaters and stop the user to use the system again before cooling down
     # targettemp[0] is used for the cooling down temp limit 
     def cooling_down_screen(self):
-        self.heater_off(self.pi, self.heater_ssr_pin)
-        self.initialize_fans_0(self.kit, self.fan_channels)
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+            self.initialize_fans_0(self.kit, self.fan_channels)
         self.reset_assigned_value()
         if self.person_running == True:
                 self.stop_weight_150_check_thread()
-        self.cooling_system_down()
+        if ENABLE_HARDWARE:
+            self.cooling_system_down()
         self.working_frame.destroy()
         self.cooling_down_frame = tk.Frame(self, bg="#f4e9e1")
         self.cooling_down_frame.pack(pady=0)
@@ -592,16 +580,26 @@ class ThariBakhoorApp(tk.Tk):
         
     # Define a function to continuously check temperature
         def check_temperature():
-            temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[0])
-            if temperature is not None and temperature < self.targettemp[0]:
-                for widget in self.winfo_children():
-                    widget.destroy()
-                self.initialize_fans_0(self.kit, self.fan_channels)
-                self.running = True
-                self.person_running = False
-                self.load_main_screen()  # Load main screen if temperature is below targettemp[0]
+            if ENABLE_HARDWARE:
+                temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[0])
+                if temperature is not None and temperature < self.targettemp[0]:
+                    for widget in self.winfo_children():
+                        widget.destroy()
+                    self.initialize_fans_0(self.kit, self.fan_channels)
+                    self.running = True
+                    self.person_running = False
+                    self.load_main_screen()
+                else:
+                    self.after(1000, check_temperature)
             else:
-                self.after(1000, check_temperature)  # Check temperature again after 1 second
+                def simulate_reset():
+                    for widget in self.winfo_children():
+                        widget.destroy()
+                    self.running = True
+                    self.person_running = False
+                    self.load_main_screen()
+
+                self.after(3000, simulate_reset)
 
         # Start checking temperature
         check_temperature()
@@ -610,12 +608,13 @@ class ThariBakhoorApp(tk.Tk):
         self.assigned_heat = 3
         self.assigned_speed = 3
         self.assigned_time = 2
-        self._saved_time = 0.0
+        self._saved_time = 0.0 # self.saved_time
         
     def show_custom_screen(self):
         self.running = False
         self.person_running = True
-        self.start_person_150_check_thread()
+        if ENABLE_HARDWARE:
+            self.start_person_150_check_thread()
 
         # Destroy the buttons frame
         self.load_buttons_frame.destroy()
@@ -690,7 +689,7 @@ class ThariBakhoorApp(tk.Tk):
         time_10_.grid(row=2, column=3, padx=10, pady=5)
 
         # Create Save button to print values
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
+        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values if ENABLE_HARDWARE else self.custom_save_values, font=("DM Sans", 12))
         save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0))  # Place the Save button on the left
 
         # Create Close button
@@ -699,17 +698,29 @@ class ThariBakhoorApp(tk.Tk):
 
 
     def custom_save_values(self):
-        # Check for heat value
+        # Store current selections for simulation
         heat_value = sum(1 for pb in self.heat_progress_bars if pb["value"] == 100)
-
-        # Check for speed value
         speed_value = sum(1 for pb in self.speed_progress_bars if pb["value"] == 100)
-
-        # Get the time value from self.time_record
         time_value = self.get_time_value()
-        print("Heat value:", heat_value)
-        print("Speed value:", speed_value)
-        print("Time value:", time_value)
+
+        print("Heat value (GUI only):", heat_value)
+        print("Speed value (GUI only):", speed_value)
+        print("Time value (GUI only):", time_value)
+
+        # Store the values like in normal mode
+        self.assigned_heat = heat_value
+        self.assigned_speed = speed_value
+        self.assigned_time = time_value
+        self.saved_time = time.time()
+
+        # Clean up frames
+        self.time_frame.destroy()
+        self.heat_frame.destroy()
+        self.speed_frame.destroy()
+        self.button_panel_frame.destroy()
+
+        # Simulate heater wait + transition to working screen
+        self.waiting_screen()
 
 
 
@@ -722,31 +733,33 @@ class ThariBakhoorApp(tk.Tk):
         except ValueError:
             return 0
 
-
     def show_main_screen_buttons(self):
         # Destroy the custom screen
         for widget in self.winfo_children():
             widget.destroy()
-    
+
         # Reload the main screen buttons
-        
         self.load_logo()
         self.load_date_time()
         self.load_buttons()
-        self.running=True
+    
+        self.running = True
         self.person_running = False
-        self.stop_weight_150_check_thread()
-        self.start_weight_check_thread()
+
+        if ENABLE_HARDWARE:
+            self.stop_weight_150_check_thread()
+            self.start_weight_check_thread()
 
     def cleanup_gpio(self):
-        # Turn off all heaters
-        self.heater_off(self.pi, self.heater_ssr_pin)
-        # Turn off all fans
-        self.initialize_fans_0(self.kit, self.fan_channels)
-        # Close GPIO pins
-        GPIO.cleanup()
-        # Disconnect from pigpio
-        self.pi.stop()
+        if ENABLE_HARDWARE:
+            # Turn off all heaters
+            self.heater_off(self.pi, self.heater_ssr_pin)
+            # Turn off all fans
+            self.initialize_fans_0(self.kit, self.fan_channels)
+            # Close GPIO pins
+            GPIO.cleanup()
+            # Disconnect from pigpio
+            self.pi.stop()
 
     # Override the default destroy method of your Tkinter application
     def destroy(self):
@@ -817,49 +830,54 @@ class ThariBakhoorApp(tk.Tk):
 
 
 #Code for the python-sensorsdef check_person_weight(self):
-    # Automtically start here
     def check_person_weight(self): 
-        weight_safe = self.checking_weight()
-        if weight_safe:
-            print("Weightdetected, auto start happening as more than 50kg")
-            self.auto_start_save()
-            # messagebox.showinfo("Weight Check", "Person's weight is safe.")
+        if ENABLE_HARDWARE:
+            weight_safe = self.checking_weight()
+            if weight_safe:
+                print("Weight detected, auto start happening as more than 50kg")
+                self.auto_start_save()
+            else:
+                print("Weight not detected, auto start will not be activated")
         else:
-            print("Weight not detected, auto start will not be activated")
-            
-            #messagebox.showwarning("Weight Check", "Person's weight exceeds safety limit.")
+            print("[GUI-only] Skipping weight check.")
 
     def check_150_weight(self): 
-        weight_safe = self.checking_150_weight()
-        if weight_safe:
-            print("Weight more than 150kg")
-            self.pi.write(self.door_ssr_pin, 1)
-            # messagebox.showinfo("Weight Check", "Person's weight is safe.")
+        if ENABLE_HARDWARE:
+            weight_safe = self.checking_150_weight()
+            if weight_safe:
+                print("Weight more than 150kg")
+                self.pi.write(self.door_ssr_pin, 1)
+            else:
+                print("Weight less than 150kg")
+                self.pi.write(self.door_ssr_pin, 0)
         else:
-            print("Weight less than 150kg")
-            self.pi.write(self.door_ssr_pin, 0)
-            #messagebox.showwarning("Weight Check", "Person's weight exceeds safety limit.")
+            print("[GUI-only] Skipping 150kg weight check.")
 
-    # Initialize the load cells to 0kg
     def initialize_weight(self):
-        self.hx.reset()
-        self.hx.zero()
-        ratio = 21.81341463414634
-        self.hx.set_scale_ratio(ratio)
-        time.sleep(1)
-        weight_ini = self.hx.get_weight_mean()
-        print(weight_ini)
-        time.sleep(5)
-    
-    # Main function to check weight
+        if ENABLE_HARDWARE:
+            self.hx.reset()
+            self.hx.zero()
+            ratio = 21.81341463414634
+            self.hx.set_scale_ratio(ratio)
+            time.sleep(1)
+            weight_ini = self.hx.get_weight_mean()
+            print(weight_ini)
+            time.sleep(5)
+        else:
+            print("[GUI-only] Skipping load cell initialization.")
+
     def checking_weight(self):
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping weight check. Returning False.")
+            return False
+
         weight_duration = 10  # Adjust as needed
         start_time = time.time()
         weights = []
-        
+
         while time.time() - start_time < weight_duration:
             if not self.running:
-                print("Weight check interuppted by user")
+                print("Weight check interrupted by user")
                 return False
             weight = self.hx.get_weight_mean()
             weight_kg = max(weight / 1000.00, 0.00)
@@ -869,16 +887,20 @@ class ThariBakhoorApp(tk.Tk):
 
         average_weight = sum(weights) / len(weights)
         print(average_weight)
-        return average_weight > 4.00  # Return True if weight is safe, False otherwise
-    
+        return average_weight > 4.00  # Return True if weight is safe
+
     def checking_150_weight(self):
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping 150kg weight check. Returning False.")
+            return False
+
         weight_duration = 10  # Adjust as needed
         start_time = time.time()
         weights = []
-        
+
         while time.time() - start_time < weight_duration:
             if not self.person_running:
-                print("Weight check interuppted by user")
+                print("Weight check interrupted by user")
                 return False
             weight = self.hx.get_weight_mean()
             weight_kg = max(weight / 1000.00, 0.00)
@@ -888,60 +910,75 @@ class ThariBakhoorApp(tk.Tk):
 
         average_weight = sum(weights) / len(weights)
         print(average_weight)
-        return average_weight > 6.00  # Return True if weight is safe, False otherwise
+        return average_weight > 6.00  # Return True if weight is safe
 
     def schedule_weight_check(self):
-        # Call check_person_weight function and schedule it to be called every 2 seconds
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Weight check scheduling skipped.")
+            return
         self.check_person_weight()
         self.after(2000, self.schedule_weight_check)
 
     def start_weight_check_thread(self):
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping start_weight_check_thread.")
+            return
+
         # Define the function to be run by the thread
         def weight_check_thread_func():
             while self.running:
                 self.check_person_weight()
-                time.sleep(2)  # Wait for 2 seconds before checking weight again
+                time.sleep(2)
 
-        # Create and start the thread
         self.weight_check_thread = threading.Thread(target=weight_check_thread_func)
-        self.weight_check_thread.daemon = True  # Daemonize the thread so it exits when the main program exits
-        self.weight_check_thread.start()
+        self.weight_check_thread.daemon = True
+        self.weight_check_thread.start()`
 
-    
     def start_person_150_check_thread(self):
-        # Define the function to be run by the thread
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping start_person_150_check_thread.")
+            return
+
         def person_check_thread_func():
             while self.person_running:
                 self.check_150_weight()
-                time.sleep(2)  # Wait for 2 seconds before checking weight again
+                time.sleep(2)
 
-        # Create and start the thread
         self.weight_150_check_thread = threading.Thread(target=person_check_thread_func)
-        self.weight_150_check_thread.daemon = True  # Daemonize the thread so it exits when the main program exits
+        self.weight_150_check_thread.daemon = True
         self.weight_150_check_thread.start()
 
     def stop_weight_check_thread(self):
-        # Set the flag to indicate that the thread should stop
         self.running = False
-        # Wait for the thread to finish
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping stop_weight_check_thread.")
+            return
         if self.weight_check_thread and self.weight_check_thread.is_alive():
             self.weight_check_thread.join()
 
     def stop_weight_150_check_thread(self):
-        # Set the flag to indicate that the thread should stop
         self.person_running = False
-        # Wait for the thread to finish
-        if self.weight_150_check_thread and self.weight_150_check_thread.is_alive():
+        if not ENABLE_HARDWARE:
+            print("[GUI-only] Skipping stop_weight_150_check_thread.")
+            return
+        if hasattr(self, 'weight_150_check_thread') and self.weight_150_check_thread and self.weight_150_check_thread.is_alive():
             self.weight_150_check_thread.join()
 
     def is_weight_check_thread_running(self):
-        return self.weight_check_thread and self.weight_check_thread.is_alive()
+        if not ENABLE_HARDWARE:
+            return False
+        return hasattr(self, 'weight_check_thread') and self.weight_check_thread and self.weight_check_thread.is_alive()
 
 
     def read_temperature(self, pi, sensor, target_temp):
-        stop_time = time.time() + 600  # Set your desired stop time
-        float_temp = 0.0  # Float
-        while float_temp < target_temp:
+        if not ENABLE_HARDWARE:
+            print(f"[SIMULATED] Returning fixed GUI-mode temperature: {target_temp + 5}")
+            return target_temp + 5  # Simulated temperature for GUI-only testing
+
+        stop_time = time.time() + 600  # Set a 10-min timeout
+        float_temp = 0.0
+
+        while time.time() < stop_time and float_temp < target_temp:
             c, d = pi.spi_read(sensor, 2)
             if c == 2:
                 word = (d[0] << 8) | d[1]
@@ -952,72 +989,89 @@ class ThariBakhoorApp(tk.Tk):
                     print("Temperature (t):", t)
                     print("Formatted Temperature (float_temp):", float_temp)
                     print("Current Temp:", "{:.2f}".format(float_temp))
-                    return float_temp  # Return the temperature value
+                    return float_temp
                 else:
-                    print("bad reading {:b}".format(word))
+                    print(f"Bad reading: {word:016b}")
             else:
-                print("SPI read error. Bytes received:", c)
+                print(f"SPI read error. Bytes received: {c}")
             time.sleep(1)
-        return 0  # Return a default temperature value in case the loop exits without finding the target temperature
+
+        print("Temperature read timeout. Returning fallback value 0.0")
+        return 0.0
 
     def read_temperature_average(self, pi, sensor, duration):
-        start_time = time.time()  # Get the current time
-        stop_time = start_time + duration  # Calculate the stop time
+        if not ENABLE_HARDWARE:
+            print(f"[SIMULATED] Average temperature over {duration}s: 35.0°C")
+            return 35.0  # Simulated average for GUI-only mode
 
-        temp_readings = []  # List to store temperature readings
+        start_time = time.time()
+        stop_time = start_time + duration
+        temp_readings = []
 
-        while time.time() < stop_time:  # Continue reading until stop time is reached
+        while time.time() < stop_time:
             c, d = pi.spi_read(sensor, 2)
             if c == 2:
                 word = (d[0] << 8) | d[1]
                 if (word & 0x8006) == 0:
                     t = (word >> 3) / 4.0
-                    temp_readings.append(t)  # Add temperature reading to the list
-                    #print("Raw Thermocouple Reading:", word)
-                    #print("Temperature (t):", t)
+                    temp_readings.append(t)
                     print("Current Temp:", "{:.2f}".format(t))
                 else:
-                    print("bad reading {:b}".format(word))
+                    print("Bad reading: {:016b}".format(word))
             else:
                 print("SPI read error. Bytes received:", c)
-            time.sleep(0.5)  # Adjust the sleep interval as needed
+            time.sleep(0.5)
 
-        # Calculate the average temperature
         if temp_readings:
             avg_temp = sum(temp_readings) / len(temp_readings)
             print("Average Temperature:", "{:.2f}".format(avg_temp))
-            #return avg_temp
+            return avg_temp
         else:
-            print("No temperature readings recorded.")
-            #return None
+            print("No temperature readings recorded. Returning fallback 0.0")
+            return 0.0
 
-        # Heating Element Control (Heating Element Relay)
     def heater_on(self, pi, heater_ssr_pin):
-        pi.write(heater_ssr_pin, 1)
-        print("Heater turned on")
+        if ENABLE_HARDWARE:
+            pi.write(heater_ssr_pin, 1)
+            print("Heater turned on")
+        else:
+            print("[SIMULATED] Heater ON")
 
-    def heater_off(self,pi,heater_ssr_pin):
-        pi.write(heater_ssr_pin, 0)
-        print("Heater turned off")
+    def heater_off(self, pi, heater_ssr_pin):
+        if ENABLE_HARDWARE:
+            pi.write(heater_ssr_pin, 0)
+            print("Heater turned off")
+        else:
+            print("[SIMULATED] Heater OFF")
 
-    # Initializes the fans to to 0
     def initialize_fans_0(self, kit, fan_channels):
-        for channels in fan_channels:
-            kit._pca.channels[channels].duty_cycle = 0
+        if ENABLE_HARDWARE:
+            for channel in fan_channels:
+                kit._pca.channels[channel].duty_cycle = 0
+        else:
+            print("[SIMULATED] Fans set to 0% duty cycle")
 
-     # Initializes the fans to to 0
     def initialize_fans_100(self, kit, fan_channels):
-        for channels in fan_channels:
-            kit._pca.channels[channels].duty_cycle = 100
+        if ENABLE_HARDWARE:
+            for channel in fan_channels:
+                kit._pca.channels[channel].duty_cycle = 100
+        else:
+            print("[SIMULATED] Fans set to 100% duty cycle")
 
-    def control_fans(self,kit, fan_channels, duty_cycles):
-        for channel, duty_cycle in zip(fan_channels, duty_cycles):
-            kit._pca.channels[channel].duty_cycle = int(duty_cycle * 65535 / 100) 
+    def control_fans(self, kit, fan_channels, duty_cycles):
+        if ENABLE_HARDWARE:
+            for channel, duty_cycle in zip(fan_channels, duty_cycles):
+                kit._pca.channels[channel].duty_cycle = int(duty_cycle * 65535 / 100)
+        else:
+            print("[SIMULATED] Setting fan duty cycles:", duty_cycles)
 
     def cooling_system_down(self):
-        duty_cycles = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
-        self.control_fans(self.kit, self.fan_channels, duty_cycles)
+        duty_cycles = [50] * 12  # 12 fan channels
+        if ENABLE_HARDWARE:
+            self.control_fans(self.kit, self.fan_channels, duty_cycles)
+        else:
+            print("[SIMULATED] Cooling system fans set to 50% duty cycle")
         
-if _name_ == "_main_":
+if __name__ == "__main__":
     app = ThariBakhoorApp()
     app.mainloop()
