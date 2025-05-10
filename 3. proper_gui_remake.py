@@ -1187,10 +1187,9 @@ class ThariBakhoorApp(tk.Tk):
             self.pi.write(self.door_ssr_pin, 1)  # Unlock the door
             self.initialize_fans_0(self.kit, self.fan_channels)  # Turn off fans
 
-        # Destroy all current frames
-        for frame in [self.heat_frame, self.speed_frame, self.time_frame, self.button_panel_frame]:
-            if frame:
-                frame.destroy()
+        # Clear the entire screen to avoid duplicate labels and gaps
+        for widget in self.winfo_children():
+            widget.destroy()
 
         # Show Safe Mode screen
         self.safe_mode_frame = tk.Frame(self, bg="#f4e9e1")
