@@ -932,7 +932,7 @@ class ThariBakhoorApp(tk.Tk):
 
         self.weight_check_thread = threading.Thread(target=weight_check_thread_func)
         self.weight_check_thread.daemon = True
-        self.weight_check_thread.start()`
+        self.weight_check_thread.start()
 
     def start_person_150_check_thread(self):
         if not ENABLE_HARDWARE:
