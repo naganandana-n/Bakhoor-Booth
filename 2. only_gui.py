@@ -5,7 +5,7 @@ from datetime import datetime
 from PIL import Image, ImageTk
 import threading
 
-ENABLE_HARDWARE = False  # Set to True when running on Raspberry Pi with full setup
+ENABLE_HARDWARE = True  # Set to True when running on Raspberry Pi with full setup
 
 if ENABLE_HARDWARE:
     import pigpio
