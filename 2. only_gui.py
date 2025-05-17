@@ -119,7 +119,7 @@ class ThariBakhoorApp(tk.Tk):
         
     def load_logo(self):
         try:
-            image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.jpeg")
+            image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.png")
             logo_image = ImageTk.PhotoImage(image1)
             logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
             logo_label.image = logo_image
