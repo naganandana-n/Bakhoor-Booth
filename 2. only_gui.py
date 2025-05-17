@@ -78,7 +78,7 @@ class ThariBakhoorApp(tk.Tk):
     def splash_screen(self):
         # Load the image
         try:
-            image = Image.open("/home/Arbitrary/Downloads/Assets/Logo.png")
+            image = Image.open("static/logo.png")
 
             # Convert the image to a Tkinter-compatible format
             tk_image = ImageTk.PhotoImage(image)
@@ -119,7 +119,8 @@ class ThariBakhoorApp(tk.Tk):
         
     def load_logo(self):
         try:
-            image1 = Image.open("/home/Arbitrary/Downloads/Assets/Logo.png")
+            image1 = Image.open("static/logo.png")
+            image1 = image1.resize((300, 300), Image.Resampling.LANCZOS)  # Resize to fit the UI
             logo_image = ImageTk.PhotoImage(image1)
             logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
             logo_label.image = logo_image
