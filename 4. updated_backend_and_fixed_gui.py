@@ -1339,22 +1339,18 @@ class ThariBakhoorApp(tk.Tk):
             return 0.0
         
     def _get_temp_value(self):
-        if self.esp_serial and self.esp_serial.is_open:
-            try:
-                self.esp_serial.reset_input_buffer()
-                self.esp_serial.write(b'get_temp\n')
-                response = self.esp_serial.readline().decode().strip()
-                if response.startswith("TEMP:"):
-                    temp_value = float(response.split(":")[1])
-                    return temp_value
-                else:
-                    print(f"Unexpected temperature response: {response}")
-                    return 0.0
-            except Exception as e:
-                print(f"Error reading temperature: {e}")
+        try:
+            self.serial.write(b'get_temp')
+            response = self.serial.readline().decode().strip()
+            if response.startswith("TEMP:"):
+                temp_c = float(response.split(":")[1])
+                print(f"[Temp Check] Current temperature: {temp_c:.2f} °C")
+                return temp_c
+            else:
+                print(f"[Temp Check] Unexpected response: {response}")
                 return 0.0
-        else:
-            print("ESP serial connection not open.")
+        except Exception as e:
+            print(f"[Temp Check] Serial error: {e}")
             return 0.0
     
     def checking_150_weight(self):
