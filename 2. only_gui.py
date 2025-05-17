@@ -38,6 +38,7 @@ class ThariBakhoorApp(tk.Tk):
             # self.fan_channels = list(range(16))
             # self.initialize_fans_0(self.kit, self.fan_channels)
             self.fan_gpio_pin = 21
+            GPIO.setup(self.fan_gpio_pin, GPIO.OUT)
             self.pi.set_mode(self.fan_gpio_pin, pigpio.OUTPUT)
             self.pi.write(self.fan_gpio_pin, 0)
 
