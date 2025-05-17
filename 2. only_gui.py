@@ -877,12 +877,31 @@ class ThariBakhoorApp(tk.Tk):
             self.hx.reset()
             self.hx.zero()
             # self.hx.tare()
-            ratio = 21.81341463414634
+            """ ratio = 21.81341463414634
             self.hx.set_scale_ratio(ratio)
             time.sleep(1)
             weight_ini = self.hx.get_weight_mean()
             print(weight_ini)
-            time.sleep(5)
+            time.sleep(5) """
+            time.sleep(1)  # Give time to stabilize
+
+            print("Warming up the HX711 sensor...")
+            data = []
+            for _ in range(5):
+                reading = self.hx.get_raw_data_mean(5)
+                if reading is not None:
+                    data.append(reading)
+                time.sleep(0.5)
+
+            if len(data) >= 2:
+                print("Enough readings gathered, proceeding to zero scale.")
+                self.hx.zero()
+                ratio = 21.81341463414634
+                self.hx.set_scale_ratio(ratio)
+                weight_ini = self.hx.get_weight_mean()
+                print("Initial weight:", weight_ini)
+            else:
+                print("Not enough data to zero the scale safely.")
         else:
             print("[GUI-only] Skipping load cell initialization.")
 
