@@ -101,8 +101,6 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             # self.initialize_fans_100(self.kit, self.fan_channels)
             GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
-        # Simulate splash screen for 3 seconds
-        self.after(3000, self.load_main_screen)
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
