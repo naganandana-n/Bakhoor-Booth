@@ -332,7 +332,7 @@ class ThariBakhoorApp(tk.Tk):
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
-        def select_heat_level(self, level):
+    def select_heat_level(self, level):
         self.selected_heat_level = level
         for i, (lvl, _) in enumerate(self.heat_levels):
             self.heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
