@@ -17,6 +17,7 @@ try:
         ser.write(b'get_weight')  
         # ser.write(b'get_temp')
         response = ser.readline().decode().strip()
+        print(response)
 
         if response.startswith("KG:"):
             weight = response.split(":")[1]
