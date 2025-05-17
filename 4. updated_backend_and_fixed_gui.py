@@ -241,6 +241,16 @@ class ThariBakhoorApp(tk.Tk):
         self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
         self.time_record.grid(row=1, column=2, sticky="w")
 
+        # Instructional message
+        instruction_label = tk.Label(
+            self.button_panel_frame,
+            text="[put the instructions here. \nMultiline instructions also ok.]",
+            font=("DM Sans", 12),
+            bg="#f4e9e1",
+            justify="center"
+        )
+        instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
+
         # Create Save button to print values
         save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
         save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
