@@ -61,7 +61,7 @@ class ThariBakhoorApp(tk.Tk):
             self.pi = None
             self.kit = None
             self.hx = None
-            self.sensor = None
+            # self.sensor = None
             self.heater_ssr_pin = None
             self.door_ssr_pin = None
             self.fan_channels = []
@@ -577,7 +577,7 @@ class ThariBakhoorApp(tk.Tk):
             print(actual_heat_value)
 
             while True:
-                temperature = self.read_temperature(self.pi, self.sensor, target_temp)
+                temperature = self.read_temperature(self.pi, target_temp)
                 if temperature >= 450:
                     print(" EMERGENCY: Heater turned OFF due to temperature > 450°C during preheat")
                     self.heater_off(self.pi, self.heater_ssr_pin)
@@ -639,7 +639,7 @@ class ThariBakhoorApp(tk.Tk):
             else:
                 # Check temperature only if time remaining is not 0
                 if ENABLE_HARDWARE:
-                    temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[1])
+                    temperature = self.read_temperature(self.pi, self.targettemp[1])
                     if temperature is not None:
                         if temperature >= 450:
                             print(" EMERGENCY: Temperature exceeded 450°C. Shutting down heater.")
@@ -690,7 +690,7 @@ class ThariBakhoorApp(tk.Tk):
     # Define a function to continuously check temperature
         def check_temperature():
             if ENABLE_HARDWARE:
-                temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[0])
+                temperature = self.read_temperature(self.pi, self.targettemp[0])
                 if temperature is not None and temperature < self.targettemp[0]:
                     for widget in self.winfo_children():
                         widget.destroy()
