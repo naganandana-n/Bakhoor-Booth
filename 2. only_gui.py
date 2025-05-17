@@ -90,7 +90,7 @@ class ThariBakhoorApp(tk.Tk):
         # Only run fan purge if hardware is enabled
         if ENABLE_HARDWARE:
             # self.initialize_fans_100(self.kit, self.fan_channels)
-            GPIO.output(self.fan_pin, GPIO.HIGH)
+            GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
         # Simulate splash screen for 3 seconds
         self.after(3000, self.load_main_screen)
 
@@ -98,7 +98,7 @@ class ThariBakhoorApp(tk.Tk):
         # Stops all the fans
         if ENABLE_HARDWARE:
             # self.initialize_fans_0(self.kit, self.fan_channels)
-            GPIO.output(self.fan_pin, GPIO.LOW)
+            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
 
         # Destroy splash screen widgets
         self.logo_label.destroy()
@@ -520,7 +520,7 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             # channel_duty_cycle = self.check_speed_value()
             # self.control_fans(self.kit, self.fan_channels, channel_duty_cycle)
-            GPIO.output(self.fan_pin, GPIO.HIGH)
+            GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
 
         # Calculate min and max heat values
         min_heat = self.assigned_heat - 20
@@ -581,13 +581,13 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
             # self.initialize_fans_0(self.kit, self.fan_channels)
-            GPIO.output(self.fan_pin, GPIO.LOW)
+            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
         self.reset_assigned_value()
         if self.person_running == True:
                 self.stop_weight_150_check_thread()
         if ENABLE_HARDWARE:
             # self.cooling_system_down()
-            GPIO.output(self.fan_pin, GPIO.HIGH)
+            GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
         self.working_frame.destroy()
         self.cooling_down_frame = tk.Frame(self, bg="#f4e9e1")
         self.cooling_down_frame.pack(pady=0)
@@ -602,7 +602,7 @@ class ThariBakhoorApp(tk.Tk):
                     for widget in self.winfo_children():
                         widget.destroy()
                     # self.initialize_fans_0(self.kit, self.fan_channels)
-                    GPIO.output(self.fan_pin, GPIO.LOW)
+                    GPIO.output(self.fan_gpio_pin, GPIO.LOW)
                     self.running = True
                     self.person_running = False
                     self.load_main_screen()
@@ -773,7 +773,7 @@ class ThariBakhoorApp(tk.Tk):
             self.heater_off(self.pi, self.heater_ssr_pin)
             # Turn off all fans
             # self.initialize_fans_0(self.kit, self.fan_channels)
-            GPIO.output(self.fan_pin, GPIO.LOW)
+            GPIO.output(self.self.fan_gpio_pin, GPIO.LOW)
             # Close GPIO pins
             GPIO.cleanup()
             # Disconnect from pigpio
