@@ -16,6 +16,7 @@ try:
     while True:
         ser.write(b'get_weight')  
         # ser.write(b'get_temp')
+        time.sleep(3)
         response = ser.readline().decode().strip()
         print(response)
 
@@ -26,10 +27,10 @@ try:
             temp = response.split(":")[1]
             print(f"Temperature: {temp} °C")
         else:
-            print(f"Unexpected response: {response}")
+            print(f"Response: {response}")
 
         time.sleep(2)
 
 except KeyboardInterrupt:
-    print("\nExiting gracefully.")
+    print("\nExiting.")
     ser.close()
