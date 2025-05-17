@@ -257,7 +257,7 @@ class ThariBakhoorApp(tk.Tk):
         # Instructional message
         instruction_label = tk.Label(
             self.button_panel_frame,
-            text="[put the instructions here. \nMultiline instructions also ok.]",
+            text="Ensure incense is placed in the chamber",
             font=("DM Sans", 12),
             bg="#f4e9e1",
             justify="center"
@@ -355,7 +355,7 @@ class ThariBakhoorApp(tk.Tk):
         # Instruction Label
         self.instruction_label = tk.Label(
             self.button_panel_frame,
-            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            text="Ensure incense is placed in the chamber",
             bg="#f4e9e1",
             font=("DM Sans", 12)
         )
@@ -453,7 +453,7 @@ class ThariBakhoorApp(tk.Tk):
         # Instruction Label
         self.instruction_label = tk.Label(
             self.button_panel_frame,
-            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            text="Ensure incense is placed in the chamber",
             bg="#f4e9e1",
             font=("DM Sans", 12)
         )
@@ -801,7 +801,7 @@ class ThariBakhoorApp(tk.Tk):
         # Instruction Label
         self.instruction_label = tk.Label(
             self.button_panel_frame,
-            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            text="Ensure incense is placed in the chamber",
             bg="#f4e9e1",
             font=("DM Sans", 12)
         )
