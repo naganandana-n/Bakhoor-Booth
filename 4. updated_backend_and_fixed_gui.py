@@ -1322,6 +1322,21 @@ class ThariBakhoorApp(tk.Tk):
         return average_weight > 4.00  # Return True if weight is safe
         '''
 
+    def _get_weight_value(self):
+        try:
+            self.serial.write(b'get_weight\n')
+            response = self.serial.readline().decode().strip()
+            if response.startswith("KG:"):
+                weight_kg = float(response.split(":")[1])
+                print(f"[Weight Check] Current weight: {weight_kg:.2f} kg")
+                return weight_kg
+            else:
+                print(f"[Weight Check] Unexpected response: {response}")
+                return 0.0
+        except Exception as e:
+            print(f"[Weight Check] Serial error: {e}")
+            return 0.0
+    
     def checking_150_weight(self):
         if not ENABLE_HARDWARE:
             print("[GUI-only] Skipping 150kg weight check. Returning False.")
