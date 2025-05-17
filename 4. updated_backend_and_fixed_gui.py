@@ -1567,6 +1567,10 @@ class ThariBakhoorApp(tk.Tk):
         else:
             print("[SIMULATED] Cooling system fans set to 50% duty cycle")
     
+    def _update_person_mode_label(self, text):
+        if hasattr(self, 'main_label'):
+            self.main_label.config(text=text)
+    
     def activate_safe_mode(self):
         # Disable heater
         if ENABLE_HARDWARE:
