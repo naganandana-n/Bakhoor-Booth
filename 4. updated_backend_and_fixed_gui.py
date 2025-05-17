@@ -104,6 +104,16 @@ class ThariBakhoorApp(tk.Tk):
         # Simulate splash screen for 3 seconds
         self.after(3000, self.load_main_screen)
 
+        # Bind screen touch to continue
+        self.bind("<Button-1>", self.on_splash_click)
+        self.after(120000, self.on_splash_click, None)  # fallback auto-continue
+
+    def on_splash_click(self, event):
+        self.unbind("<Button-1>")
+        self.logo_label.destroy()
+        self.touch_label.destroy()
+        self.load_main_screen()
+
     def load_main_screen(self):
         # Stops all the fans
         if ENABLE_HARDWARE:
@@ -253,7 +263,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Create Save button to print values
         save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
-        save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
+        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
 
         # Safe Mode button
         safe_button = tk.Button(
@@ -266,7 +276,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=0, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
     def show_clothes_screen(self):
         self.running=False
@@ -339,9 +349,18 @@ class ThariBakhoorApp(tk.Tk):
         self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
         self.time_record.grid(row=1, column=2, sticky="w")
 
+        # Instruction Label
+        self.instruction_label = tk.Label(
+            self.button_panel_frame,
+            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            bg="#f4e9e1",
+            font=("DM Sans", 12)
+        )
+        self.instruction_label.grid(row=0, column=1, pady=(10, 0))
+
         # Create Save button to print values
         save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
-        save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
+        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
 
         # Safe Mode button
         safe_button = tk.Button(
@@ -354,7 +373,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=0, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
 
     def show_surrounding_screen(self):
@@ -428,9 +447,18 @@ class ThariBakhoorApp(tk.Tk):
         self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
         self.time_record.grid(row=1, column=2, sticky="w")
 
+        # Instruction Label
+        self.instruction_label = tk.Label(
+            self.button_panel_frame,
+            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            bg="#f4e9e1",
+            font=("DM Sans", 12)
+        )
+        self.instruction_label.grid(row=0, column=1, pady=(10, 0))
+
         # Create Save button to print values
         save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
-        save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
+        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
 
         # Safe Mode button
         safe_button = tk.Button(
@@ -444,7 +472,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=0, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
         
     def save_values(self):
         # Notes down the time at when the process starts
@@ -547,6 +575,12 @@ class ThariBakhoorApp(tk.Tk):
 
             while True:
                 temperature = self.read_temperature(self.pi, self.sensor, target_temp)
+                if temperature >= 450:
+                    print(" EMERGENCY: Heater turned OFF due to temperature > 450°C during preheat")
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                    messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
+                    return  # Exit without proceeding
+
                 if temperature > target_temp:
                     break
                 time.sleep(1)
@@ -604,6 +638,13 @@ class ThariBakhoorApp(tk.Tk):
                 if ENABLE_HARDWARE:
                     temperature = self.read_temperature(self.pi, self.sensor, self.targettemp[1])
                     if temperature is not None:
+                        if temperature >= 450:
+                            print(" EMERGENCY: Temperature exceeded 450°C. Shutting down heater.")
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                            messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
+                            self.cooling_down_screen()
+                            return  # Immediately exit to prevent further execution
+                        
                         if min_heat <= temperature <= max_heat and heater_on:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                             heater_on = False
@@ -754,9 +795,18 @@ class ThariBakhoorApp(tk.Tk):
         time_10_ = tk.Button(self.time_frame, text="+10", command=lambda: self.add_time(10), font=("DM Sans", 12), width=8)
         time_10_.grid(row=2, column=3, padx=10, pady=5)
 
+        # Instruction Label
+        self.instruction_label = tk.Label(
+            self.button_panel_frame,
+            text="Please confirm your settings.\nHeating will begin once you press Start.",
+            bg="#f4e9e1",
+            font=("DM Sans", 12)
+        )
+        self.instruction_label.grid(row=0, column=1, pady=(10, 0))
+
         # Create Save button to print values
         save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values if ENABLE_HARDWARE else self.custom_save_values, font=("DM Sans", 12))
-        save_button.grid(row=0, column=0, padx=(50, 10), pady=(10, 0))  # Place the Save button on the left
+        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))  # Place the Save button on the left
 
         # Safe Mode button
         safe_button = tk.Button(
@@ -769,7 +819,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=0, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
 
     def custom_save_values(self):
@@ -807,6 +857,25 @@ class ThariBakhoorApp(tk.Tk):
             return total_minutes
         except ValueError:
             return 0
+        
+    '''
+    //3.
+    def get_time_value(self):
+        try:
+            current_time = self.time_record["text"]
+            hours, minutes, seconds = map(int, current_time.split(":"))
+            total_seconds = (hours * 60 + minutes) * 60 + seconds
+
+            # Clamp time to spec durations
+            if total_seconds <= 150:
+                return 150
+            elif total_seconds <= 300:
+                return 300
+            else:
+                return 480
+        except ValueError:
+            return 0
+    '''
 
     def show_main_screen_buttons(self):
         # Destroy the custom screen
@@ -934,12 +1003,12 @@ class ThariBakhoorApp(tk.Tk):
             self.hx.reset()
             self.hx.zero()
             # self.hx.tare()
-            """ ratio = 21.81341463414634
+            ratio = 21.81341463414634
             self.hx.set_scale_ratio(ratio)
             time.sleep(1)
             weight_ini = self.hx.get_weight_mean()
             print(weight_ini)
-            time.sleep(5) """
+            time.sleep(5) 
             time.sleep(1)  # Give time to stabilize
 
             print("Warming up the HX711 sensor...")
@@ -1085,6 +1154,14 @@ class ThariBakhoorApp(tk.Tk):
                     print("Temperature (t):", t)
                     print("Formatted Temperature (float_temp):", float_temp)
                     print("Current Temp:", "{:.2f}".format(float_temp))
+
+                    # Emergency shutoff if temperature exceeds 450°C
+                    if float_temp >= 450:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                        print(" EMERGENCY: Heater turned OFF due to temperature > 450°C")
+                        messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
+                        return float_temp  # Still return it so loop exits gracefully
+
                     return float_temp
                 else:
                     print(f"Bad reading: {word:016b}")
