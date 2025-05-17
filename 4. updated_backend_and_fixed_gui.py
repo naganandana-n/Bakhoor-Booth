@@ -106,10 +106,12 @@ class ThariBakhoorApp(tk.Tk):
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
-        self.after(120000, self.on_splash_click, None)  # fallback auto-continue
+        self.splash_timeout_id = self.after(120000, self.on_splash_click, None)
 
     def on_splash_click(self, event):
         self.unbind("<Button-1>")
+        if hasattr(self, 'splash_timeout_id'):
+            self.after_cancel(self.splash_timeout_id)
         self.logo_label.destroy()
         self.touch_label.destroy()
         self.load_main_screen()
