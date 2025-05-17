@@ -1018,7 +1018,7 @@ class ThariBakhoorApp(tk.Tk):
         
             
         print("Weight initialization handled by ESP32 via serial.")
-            '''
+        '''
             print("Warming up the HX711 sensor...")
             data = []
             for _ in range(5):
