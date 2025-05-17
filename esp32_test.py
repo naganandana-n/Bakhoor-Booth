@@ -15,7 +15,7 @@ except serial.SerialException as e:
 try:
     while True:
         ser.write(b'get_weight')  
-        ser.write(b'get_temp')
+        # ser.write(b'get_temp')
         response = ser.readline().decode().strip()
 
         if response.startswith("KG:"):
