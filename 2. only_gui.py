@@ -70,13 +70,15 @@ class ThariBakhoorApp(tk.Tk):
         self.style.theme_use('alt')
         # Configure the custom style
         self.style.configure("Custom.Veritcal.TProgressbar", background="#8B5742")
+        self.running = True
+        self.person_running = False
         # Splash screen
         self.splash_screen()
 
     def splash_screen(self):
         # Load the image
         try:
-            image = Image.open("/home/Arbitrary/Downloads/Assets/Splash.jpeg")
+            image = Image.open("/home/Arbitrary/Downloads/Assets/Logo.png")
 
             # Convert the image to a Tkinter-compatible format
             tk_image = ImageTk.PhotoImage(image)
