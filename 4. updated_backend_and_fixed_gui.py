@@ -643,6 +643,7 @@ class ThariBakhoorApp(tk.Tk):
     def _person_mode_flow(self):
         # 1. Start heater for x_seconds
         if ENABLE_HARDWARE:
+            
             self.heater_on(self.pi, self.heater_ssr_pin)
         # self.waiting_screen()
         self._update_person_mode_label(f"Heating... ({self.x_seconds}s)")
@@ -1324,7 +1325,7 @@ class ThariBakhoorApp(tk.Tk):
 
     def _get_weight_value(self):
         try:
-            self.serial.write(b'get_weight\n')
+            self.serial.write(b'get_weight')
             response = self.serial.readline().decode().strip()
             if response.startswith("KG:"):
                 weight_kg = float(response.split(":")[1])
