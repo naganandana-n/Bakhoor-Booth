@@ -72,6 +72,7 @@ class ThariBakhoorApp(tk.Tk):
         self.style.configure("Custom.Veritcal.TProgressbar", background="#8B5742")
         self.running = True
         self.person_running = False
+        self.targettemp = [40, 120]
         # Splash screen
         self.splash_screen()
 
