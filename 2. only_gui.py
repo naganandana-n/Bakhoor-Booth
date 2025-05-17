@@ -78,7 +78,7 @@ class ThariBakhoorApp(tk.Tk):
     def splash_screen(self):
         # Load the image
         try:
-            image = Image.open("static/logo.png")
+            image = Image.open("/home/Arbitrary/DownloadsLogo.png/Assets/")
 
             # Convert the image to a Tkinter-compatible format
             tk_image = ImageTk.PhotoImage(image)
