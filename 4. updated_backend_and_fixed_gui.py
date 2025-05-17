@@ -77,9 +77,10 @@ class ThariBakhoorApp(tk.Tk):
         self.splash_screen()
 
     def splash_screen(self):
-        # Load the image
+        # Load the imageß
         try:
             image = Image.open("static/splash.png")
+            image = image.resize((400, 400), Image.Resampling.LANCZOS)
 
             # Convert the image to a Tkinter-compatible format
             tk_image = ImageTk.PhotoImage(image)
