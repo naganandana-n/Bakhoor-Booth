@@ -875,8 +875,8 @@ class ThariBakhoorApp(tk.Tk):
     def initialize_weight(self):
         if ENABLE_HARDWARE:
             self.hx.reset()
-            # self.hx.zero()
-            self.hx.tare()
+            self.hx.zero()
+            # self.hx.tare()
             ratio = 21.81341463414634
             self.hx.set_scale_ratio(ratio)
             time.sleep(1)
