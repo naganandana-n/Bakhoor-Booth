@@ -201,10 +201,13 @@ class ThariBakhoorApp(tk.Tk):
             
         # Heat Control Label
         heat_label = tk.Label(self.heat_frame, text="Heat Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        heat_label.grid(row=4, columnspan=5, pady=(0, 10))
+        # heat_label.grid(row=4, columnspan=5, pady=(0, 10))
+        heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        speed_label.grid(row=4, columnspan=5, pady=(0, 10))
+        # speed_label.grid(row=4, columnspan=5, pady=(0, 10))
+        speed_label.grid(row=0, columnspan=3, pady=(0, 10))
         time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
+        '''
         time_label.grid(row=4, columnspan=5, pady=(0, 10))
     
         # Lengths for each progress bar
@@ -229,7 +232,10 @@ class ThariBakhoorApp(tk.Tk):
             # Fill progress bars according to heat_value
             if i < heat_value:
                 progress_bar["value"] = 100
+        '''
+        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
+        '''
         # Create and pack progress bars in speed_frame
         self.speed_progress_bars = []
         for i, length in enumerate(bar_lengths):
@@ -253,6 +259,51 @@ class ThariBakhoorApp(tk.Tk):
         # Display the formatted time_value in the time_record label
         self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
         self.time_record.grid(row=1, column=2, sticky="w")
+        '''
+
+        # HEAT CONTROL (3 bars: Low, Medium, High)
+        self.heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
+        self.heat_buttons = []
+        self.selected_heat_level = "Medium"  # Default selection
+        for i, (level, label) in enumerate(self.heat_levels):
+            btn = tk.Button(
+                self.heat_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if level == self.selected_heat_level else "raised",
+                command=lambda lvl=level: self.select_heat_level(lvl)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.heat_buttons.append(btn)
+        # Set initial heat parameters for default
+        self.set_heat_params_from_level(self.selected_heat_level)
+
+        # SPEED CONTROL (3 bars: 1, 2, 3)
+        self.speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        self.speed_buttons = []
+        self.selected_speed_value = 2  # Default selection is 2 (index=1)
+        for i, (level, label) in enumerate(self.speed_levels):
+            btn = tk.Button(
+                self.speed_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if i == self.selected_speed_value - 1 else "raised",
+                command=lambda idx=i: self.select_speed_level(idx)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.speed_buttons.append(btn)
+
+        # Set initial speed param
+        self.set_speed_param_from_value(self.selected_speed_value)
+
+        # TIME CONTROL (show total time as per heat+speed)
+        # We'll update this label after both selections
+        self.time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
+        self.time_record.grid(row=1, column=1, sticky="w")
+        self.update_time_record_label()
+
 
         # Instructional message
         instruction_label = tk.Label(
@@ -280,6 +331,58 @@ class ThariBakhoorApp(tk.Tk):
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+
+        def select_heat_level(self, level):
+        self.selected_heat_level = level
+        for i, (lvl, _) in enumerate(self.heat_levels):
+            self.heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+        self.set_heat_params_from_level(level)
+        self.update_time_record_label()
+
+    def set_heat_params_from_level(self, level):
+        # Map heat level to x_seconds, y_seconds, heat_duration
+        if level == "Low":
+            self.x_seconds = 110
+            self.y_seconds = 25
+            self.heat_duration = 120
+        elif level == "Medium":
+            self.x_seconds = 120
+            self.y_seconds = 30
+            self.heat_duration = 130
+        elif level == "High":
+            self.x_seconds = 130
+            self.y_seconds = 35
+            self.heat_duration = 140
+        else:
+            self.x_seconds = 120
+            self.y_seconds = 30
+            self.heat_duration = 130
+
+    def select_speed_level(self, idx):
+        self.selected_speed_value = idx + 1
+        for i in range(len(self.speed_buttons)):
+            self.speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        self.set_speed_param_from_value(self.selected_speed_value)
+        self.update_time_record_label()
+
+    def set_speed_param_from_value(self, value):
+        # value: 1, 2, 3
+        if value == 1:
+            self.speed_duration = 150
+        elif value == 2:
+            self.speed_duration = 300
+        elif value == 3:
+            self.speed_duration = 480
+        else:
+            self.speed_duration = 300
+
+    def update_time_record_label(self):
+        # Show a summary of the current settings (heat_duration + speed_duration)
+        total_seconds = self.heat_duration + self.speed_duration
+        mins = total_seconds // 60
+        secs = total_seconds % 60
+        self.time_record.config(text=f"Total: {mins}m {secs:02d}s")
+
 
     def show_clothes_screen(self):
         self.running=False
@@ -481,6 +584,7 @@ class ThariBakhoorApp(tk.Tk):
         # Notes down the time at when the process starts
         self.saved_time = time.time()
 
+        '''
         # Print the values of the filled progress bars in heat_frame
         heat_value = sum(pb["value"] == 100 for pb in self.heat_progress_bars)
         print("Heat:", heat_value)
@@ -495,16 +599,153 @@ class ThariBakhoorApp(tk.Tk):
         self.assigned_heat = heat_value
         self.assigned_speed = speed_value
         self.assigned_time = time_value
+        '''
+
+        # Map heat level to x_seconds, y_seconds, heat_duration
+        level = getattr(self, "selected_heat_level", "Medium")
+        self.set_heat_params_from_level(level)
+        speed_value = getattr(self, "selected_speed_value", 2)
+        self.set_speed_param_from_value(speed_value)
+        print(f"Heat Level: {self.selected_heat_level}, x_seconds={self.x_seconds}, y_seconds={self.y_seconds}, heat_duration={self.heat_duration}")
+        print(f"Speed Value: {self.selected_speed_value}, speed_duration={self.speed_duration}")
+        # Clean up frames
 
         self.time_frame.destroy()
         self.heat_frame.destroy()
         self.speed_frame.destroy()
         self.button_panel_frame.destroy()
         
-        # Heating element is turned on. 
+        # Heating element is turned on.
+        # Start the person mode sequence
+        self.start_person_mode_sequence()
+
+    def start_person_mode_sequence(self):
+        # Stop any running threads to avoid interference
+        self.running = False
+        self.person_running = False 
+        if ENABLE_HARDWARE:
+            self.stop_weight_check_thread()
+            self.stop_weight_150_check_thread()
+
+        # Lock the door
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+
+        # Show a new frame for the sequence
+        self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
+        self.person_mode_frame.pack(fill="both", expand=True)
+        self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.person_mode_label.pack(pady=40)
+
+        # Start the controlled flow in a thread to avoid blocking the GUI
+        threading.Thread(target=self._person_mode_flow, daemon=True).start()
+
+    def _person_mode_flow(self):
+        # 1. Start heater for x_seconds
         if ENABLE_HARDWARE:
             self.heater_on(self.pi, self.heater_ssr_pin)
-        self.waiting_screen()
+        # self.waiting_screen()
+        self._update_person_mode_label(f"Heating... ({self.x_seconds}s)")
+        heat_start_time = time.time()
+        # 2. Start checking weight
+        weight_ok = False
+        entered = False
+        while True:
+            weight = self._get_weight_value()
+            if weight == 0:
+                # Wait up to 15s for entry
+                self._update_person_mode_label("Waiting for entry...\nPlease enter the chamber.")
+                waited = 0
+                while waited < 15:
+                    time.sleep(1)
+                    waited += 1
+                    weight = self._get_weight_value()
+                    if weight > 50:
+                        entered = True
+                        break
+                if not entered:
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    self._update_person_mode_label("Please enter the chamber.")
+                    # Wait for entry
+                    while True:
+                        time.sleep(1)
+                        weight = self._get_weight_value()
+                        if weight > 50:
+                            entered = True
+                            if ENABLE_HARDWARE:
+                                self.heater_on(self.pi, self.heater_ssr_pin)
+                            break
+                if entered:
+                    break
+            elif weight > 50:
+                entered = True
+                break
+            elif 0 < weight <= 50:
+                # Wait 5s, then stop heater and show warning
+                time.sleep(5)
+                if ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                self._update_person_mode_label("Warning: not an adult.")
+                return
+            else:
+                time.sleep(1)
+        # Wait for x_seconds (minus any already elapsed during entry)
+        elapsed = int(time.time() - heat_start_time)
+        x_remain = max(0, self.x_seconds - elapsed)
+        self._update_person_mode_label(f"Heating... ({x_remain}s left)")
+        for i in range(x_remain):
+            time.sleep(1)
+            self._update_person_mode_label(f"Heating... ({x_remain - i}s left)")
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        # 3. Start speed_duration countdown
+        self._update_person_mode_label("Main process running...")
+        countdown = self.speed_duration
+        fan_started = False
+        y_interval = 5
+        y_last_check = 0
+        for t in range(countdown):
+            if t == 10 and ENABLE_HARDWARE and not fan_started:
+                # Start fan after 10 seconds
+                GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
+                fan_started = True
+            # Every 5s, check temp
+            if t - y_last_check >= y_interval:
+                temp = self._get_temp_value()
+                if temp < 100 and ENABLE_HARDWARE:
+                    self.heater_on(self.pi, self.heater_ssr_pin)
+                    self._update_person_mode_label("Temperature low, heater ON for y_seconds")
+                    time.sleep(self.y_seconds)
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                y_last_check = t
+            self._update_person_mode_label(f"Main process running...\nTime left: {countdown - t}s")
+            time.sleep(1)
+        # After countdown, wait for weight = 0
+        self._update_person_mode_label("Process complete. Please exit...")
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        waited_exit = 0
+        while True:
+            weight = self._get_weight_value()
+            if weight == 0:
+                break
+            time.sleep(1)
+            waited_exit += 1
+        # Turn off heater after 5s
+        self._update_person_mode_label("Turning off heater...")
+        time.sleep(5)
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        # Unlock door after 10s
+        self._update_person_mode_label("Unlocking door soon...")
+        time.sleep(10)
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 0)
+            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
+        self._update_person_mode_label("Done. Door unlocked.")
+        time.sleep(3)
+        self.person_mode_frame.after(0, self.show_main_screen_buttons)
 
     # Autostart function that saved values to be used in the next screen
     def auto_start_save(self):
@@ -801,7 +1042,7 @@ class ThariBakhoorApp(tk.Tk):
         # Instruction Label
         self.instruction_label = tk.Label(
             self.button_panel_frame,
-            text="Ensure incense is placed in the chamber",
+            text="",
             bg="#f4e9e1",
             font=("DM Sans", 12)
         )
