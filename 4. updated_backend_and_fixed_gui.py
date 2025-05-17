@@ -80,7 +80,7 @@ class ThariBakhoorApp(tk.Tk):
         # Load the imageß
         try:
             image = Image.open("static/splash.png")
-            image = image.resize((400, 400), Image.Resampling.LANCZOS)
+            # image = image.resize((400, 400), Image.Resampling.LANCZOS)
 
             # Convert the image to a Tkinter-compatible format
             tk_image = ImageTk.PhotoImage(image)
@@ -92,6 +92,11 @@ class ThariBakhoorApp(tk.Tk):
             print(f"Warning: Splash image could not be loaded: {e}")
             self.logo_label = tk.Label(self, text="Thari Bakhoor", font=("Arial", 32), bg="#f4e9e1")
         self.logo_label.pack(expand=True)
+
+        # "Touch to continue" label
+        self.touch_label = tk.Label(self, text="Touch the screen to continue...", font=("DM Sans", 14), bg="#f4e9e1", fg="#555")
+        self.touch_label.pack(pady=20)
+
         # Only run fan purge if hardware is enabled
         if ENABLE_HARDWARE:
             # self.initialize_fans_100(self.kit, self.fan_channels)
