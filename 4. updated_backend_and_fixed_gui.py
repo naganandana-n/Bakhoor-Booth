@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from PIL import Image, ImageTk
 import threading
+import serial
 
 ENABLE_HARDWARE = True  # Set to True when running on Raspberry Pi with full setup
 
@@ -42,13 +43,17 @@ class ThariBakhoorApp(tk.Tk):
             self.pi.set_mode(self.fan_gpio_pin, pigpio.OUTPUT)
             self.pi.write(self.fan_gpio_pin, 0)
 
+            # Serial connection for ESP32 communication
+            self.serial = serial.Serial("/dev/ttyS0", 9600, timeout=2)
 
+            '''
             self.hx = HX711(dout_pin=18, pd_sck_pin=15)
             # self.hx = HX711(5, 6)
             self.initialize_weight()
 
             self.sensor = self.pi.spi_open(0, 1000000, 0)
             self.read_temperature_average(self.pi, self.sensor, 3)
+            '''
 
             atexit.register(self.cleanup_gpio)
         
@@ -997,6 +1002,7 @@ class ThariBakhoorApp(tk.Tk):
             print("[GUI-only] Skipping 150kg weight check.")
 
     def initialize_weight(self):
+        '''
         if ENABLE_HARDWARE:
             self.hx.reset()
             self.hx.zero()
@@ -1008,7 +1014,11 @@ class ThariBakhoorApp(tk.Tk):
             print(weight_ini)
             time.sleep(5) 
             time.sleep(1)  # Give time to stabilize
-
+            '''
+        
+            
+            print("Weight initialization handled by ESP32 via serial.")
+            '''
             print("Warming up the HX711 sensor...")
             data = []
             for _ in range(5):
@@ -1028,12 +1038,14 @@ class ThariBakhoorApp(tk.Tk):
                 print("Not enough data to zero the scale safely.")
         else:
             print("[GUI-only] Skipping load cell initialization.")
+        '''
 
     def checking_weight(self):
         if not ENABLE_HARDWARE:
             print("[GUI-only] Skipping weight check. Returning False.")
             return False
 
+        '''
         weight_duration = 10  # Adjust as needed
         start_time = time.time()
         weights = []
@@ -1041,39 +1053,78 @@ class ThariBakhoorApp(tk.Tk):
         while time.time() - start_time < weight_duration:
             if not self.running:
                 print("Weight check interrupted by user")
+        '''
+        try:
+            self.serial.write(b'get_weight\n')
+            response = self.serial.readline().decode().strip()
+            if response.startswith("KG:"):
+                weight_kg = float(response.split(":")[1])
+                print(f"Weight: {weight_kg:.2f} kg")
+                return weight_kg > 4.00
+            else:
+                print(f"Unexpected weight response: {response}")
                 return False
+            '''
             weight = self.hx.get_weight_mean()
             weight_kg = max(weight / 1000.00, 0.00)
             print(f"Weight: {weight_kg:.2f} kg")
             weights.append(weight_kg)
             time.sleep(0.5)
+            '''
+        except Exception as e:
+            print(f"Serial error while reading weight: {e}")
+            return False
 
+        '''
         average_weight = sum(weights) / len(weights)
         print(average_weight)
         return average_weight > 4.00  # Return True if weight is safe
+        '''
 
     def checking_150_weight(self):
         if not ENABLE_HARDWARE:
             print("[GUI-only] Skipping 150kg weight check. Returning False.")
             return False
 
+        '''
         weight_duration = 10  # Adjust as needed
         start_time = time.time()
         weights = []
+        
 
         while time.time() - start_time < weight_duration:
             if not self.person_running:
                 print("Weight check interrupted by user")
+        '''
+        try:
+            self.serial.write(b'get_weight\n')
+            response = self.serial.readline().decode().strip()
+            if response.startswith("KG:"):
+                weight_kg = float(response.split(":")[1])
+                print(f"Weight: {weight_kg:.2f} kg")
+                if weight_kg > 6.00:
+                    self.pi.write(self.door_ssr_pin, 1)
+                else:
+                    self.pi.write(self.door_ssr_pin, 0)
+                return weight_kg > 6.00
+            else:
+                print(f"Unexpected weight response: {response}")
                 return False
+            '''
             weight = self.hx.get_weight_mean()
             weight_kg = max(weight / 1000.00, 0.00)
             print(f"Weight: {weight_kg:.2f} kg")
             weights.append(weight_kg)
             time.sleep(0.5)
-
+            '''
+        except Exception as e:
+            print(f"Serial error while reading 150kg weight: {e}")
+            return False
+        '''
         average_weight = sum(weights) / len(weights)
         print(average_weight)
         return average_weight > 6.00  # Return True if weight is safe
+        '''
 
     def schedule_weight_check(self):
         if not ENABLE_HARDWARE:
@@ -1138,6 +1189,7 @@ class ThariBakhoorApp(tk.Tk):
             print(f"[SIMULATED] Returning fixed GUI-mode temperature: {target_temp + 5}")
             return target_temp + 5  # Simulated temperature for GUI-only testing
 
+        '''
         stop_time = time.time() + 600  # Set a 10-min timeout
         float_temp = 0.0
 
@@ -1163,12 +1215,29 @@ class ThariBakhoorApp(tk.Tk):
                     return float_temp
                 else:
                     print(f"Bad reading: {word:016b}")
+        '''
+        try:
+            self.serial.write(b'get_temp\n')
+            response = self.serial.readline().decode().strip()
+            if response.startswith("TEMP:"):
+                float_temp = float(response.split(":")[1])
+                print(f"Received temperature: {float_temp:.2f} °C")
+                if float_temp >= 450:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                    print(" EMERGENCY: Heater turned OFF due to temperature > 450°C")
+                    messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
+                return float_temp
             else:
-                print(f"SPI read error. Bytes received: {c}")
-            time.sleep(1)
+                # print(f"SPI read error. Bytes received: {c}")
+            # time.sleep(1)
+                print(f"Unexpected temperature response: {response}")
+                return 0.0
+        except Exception as e:
+            print(f"Serial error while reading temperature: {e}")
+            return 0.0
 
-        print("Temperature read timeout. Returning fallback value 0.0")
-        return 0.0
+        # print("Temperature read timeout. Returning fallback value 0.0")
+        # return 0.0
 
     def read_temperature_average(self, pi, sensor, duration):
         if not ENABLE_HARDWARE:
@@ -1176,9 +1245,10 @@ class ThariBakhoorApp(tk.Tk):
             return 35.0  # Simulated average for GUI-only mode
 
         start_time = time.time()
-        stop_time = start_time + duration
+        # stop_time = start_time + duration
         temp_readings = []
 
+        '''
         while time.time() < stop_time:
             c, d = pi.spi_read(sensor, 2)
             if c == 2:
@@ -1187,15 +1257,28 @@ class ThariBakhoorApp(tk.Tk):
                     t = (word >> 3) / 4.0
                     temp_readings.append(t)
                     print("Current Temp:", "{:.2f}".format(t))
+        '''
+        while time.time() - start_time < duration:
+            try:
+                self.serial.write(b'get_temp\n')
+                response = self.serial.readline().decode().strip()
+                if response.startswith("TEMP:"):
+                    temp = float(response.split(":")[1])
+                    temp_readings.append(temp)
+                    print(f"Temperature: {temp:.2f}°C")
                 else:
-                    print("Bad reading: {:016b}".format(word))
-            else:
-                print("SPI read error. Bytes received:", c)
+                    print(f"Unexpected response: {response}")
+            except Exception as e:
+                print(f"Serial error while reading temperature: {e}")
+                    # print("Bad reading: {:016b}".format(word))
+            # else:
+                # print("SPI read error. Bytes received:", c)
             time.sleep(0.5)
 
         if temp_readings:
             avg_temp = sum(temp_readings) / len(temp_readings)
-            print("Average Temperature:", "{:.2f}".format(avg_temp))
+            # print("Average Temperature:", "{:.2f}".format(avg_temp))
+            print(f"Average Temperature: {avg_temp:.2f}°C")
             return avg_temp
         else:
             print("No temperature readings recorded. Returning fallback 0.0")
