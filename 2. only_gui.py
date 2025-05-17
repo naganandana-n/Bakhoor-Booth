@@ -43,8 +43,8 @@ class ThariBakhoorApp(tk.Tk):
             self.pi.write(self.fan_gpio_pin, 0)
 
 
-            # self.hx = HX711(dout_pin=18, pd_sck_pin=15)
-            self.hx = HX711(5, 6)
+            self.hx = HX711(dout_pin=18, pd_sck_pin=15)
+            # self.hx = HX711(5, 6)
             self.initialize_weight()
 
             self.sensor = self.pi.spi_open(0, 1000000, 0)
