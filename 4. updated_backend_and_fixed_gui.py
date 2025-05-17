@@ -1337,6 +1337,25 @@ class ThariBakhoorApp(tk.Tk):
         except Exception as e:
             print(f"[Weight Check] Serial error: {e}")
             return 0.0
+        
+    def _get_temp_value(self):
+        if self.esp_serial and self.esp_serial.is_open:
+            try:
+                self.esp_serial.reset_input_buffer()
+                self.esp_serial.write(b'get_temp\n')
+                response = self.esp_serial.readline().decode().strip()
+                if response.startswith("TEMP:"):
+                    temp_value = float(response.split(":")[1])
+                    return temp_value
+                else:
+                    print(f"Unexpected temperature response: {response}")
+                    return 0.0
+            except Exception as e:
+                print(f"Error reading temperature: {e}")
+                return 0.0
+        else:
+            print("ESP serial connection not open.")
+            return 0.0
     
     def checking_150_weight(self):
         if not ENABLE_HARDWARE:
