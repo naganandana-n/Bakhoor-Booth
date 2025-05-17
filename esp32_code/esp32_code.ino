@@ -42,11 +42,14 @@ void loop() {
       float weight = scale.get_units(5);  // Average of 5 readings
       if (weight < 0) weight = 0;
       Serial2.print("KG:");
-      Serial2.println(weight, 2);  // Example: KG:3.42
+      Serial2.println(weight, 2);  
+      Serial.print("KG:");
+      Serial.println(weight, 2);
     }
     else if (command == "get_temp") {
       float tempC = thermocouple.readCelsius();
       Serial2.println(tempC, 2);          // Send temperature in °C
+      Serial.println(tempC, 2); 
     }
     else {
       Serial2.println("Invalid command");
