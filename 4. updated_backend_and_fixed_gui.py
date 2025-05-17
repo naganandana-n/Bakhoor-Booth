@@ -69,7 +69,7 @@ class ThariBakhoorApp(tk.Tk):
         self.style = ttk.Style()
         self.style.theme_use('alt')
         # Configure the custom style
-        self.style.configure("Custom.Veritcal.TProgressbar", background="#8B5742")
+        self.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
         self.running = True
         self.person_running = False
         self.targettemp = [40, 120]
