@@ -773,7 +773,7 @@ class ThariBakhoorApp(tk.Tk):
             self.heater_off(self.pi, self.heater_ssr_pin)
             # Turn off all fans
             # self.initialize_fans_0(self.kit, self.fan_channels)
-            GPIO.output(self.self.fan_gpio_pin, GPIO.LOW)
+            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
             # Close GPIO pins
             GPIO.cleanup()
             # Disconnect from pigpio
