@@ -47,9 +47,20 @@ void loop() {
       Serial.println(weight, 2);
     }
     else if (command == "get_temp") {
-      float tempC = thermocouple.readCelsius();
-      Serial2.println(tempC, 2);          // Send temperature in °C
-      Serial.println(tempC, 2); 
+      // float tempC = thermocouple.readCelsius();
+      float totalTemp = 0.0;
+      int numReadings = 5;
+      for (int i = 0; i < numReadings; i++) {
+        totalTemp += thermocouple.readCelsius();
+        delay(50);  // Small delay between readings
+      }
+      float avgTemp = totalTemp / numReadings;
+      Serial2.print("TEMP:");
+      // Serial2.println(tempC, 2);          // Send temperature in °C
+      Serial2.println(avgTemp, 2);          // Send average temperature in °C
+      Serial.print("TEMP:");
+      // Serial.println(tempC, 2); 
+      Serial.println(avgTemp, 2); 
     }
     else {
       Serial2.println("Invalid command");
