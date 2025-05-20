@@ -3,7 +3,7 @@
 import pigpio
 import time
 
-HEATER_PIN = 20
+HEATER_PIN = 20 # 4
 pi = pigpio.pi()
 
 if not pi.connected:
