@@ -204,13 +204,21 @@ class ThariBakhoorApp(tk.Tk):
             self.start_person_150_check_thread()
 
         # Load frames for Heat, Speed, and Time
-        self.heat_frame = tk.Frame(self, bg="#f4e9e1")
+        # self.heat_frame = tk.Frame(self, bg="#f4e9e1")
+        # Vertically center all content in a center_frame
+        self.center_frame = tk.Frame(self, bg="#f4e9e1")
+        self.center_frame.pack(expand=True)
+
+        self.heat_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.heat_frame.pack(pady=10)
-        self.speed_frame = tk.Frame(self, bg="#f4e9e1")
+        # self.speed_frame = tk.Frame(self, bg="#f4e9e1")
+        self.speed_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.speed_frame.pack(pady=10)
-        self.time_frame = tk.Frame(self, bg="#f4e9e1")
+        # self.time_frame = tk.Frame(self, bg="#f4e9e1")
+        self.time_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.time_frame.pack(pady=0)
-        self.button_panel_frame=tk.Frame(self, bg="#f4e9e1")
+        # self.button_panel_frame=tk.Frame(self, bg="#f4e9e1")
+        self.button_panel_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.button_panel_frame.pack(pady=0)
             
         # Heat Control Label
