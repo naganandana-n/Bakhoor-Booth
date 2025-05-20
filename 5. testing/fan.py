@@ -3,7 +3,7 @@
 import pigpio
 import time
 
-FAN_PIN = 21  
+FAN_PIN = 21  # 18
 pi = pigpio.pi()
 
 if not pi.connected:
