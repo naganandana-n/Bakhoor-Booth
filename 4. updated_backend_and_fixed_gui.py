@@ -71,7 +71,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Allow ESC to exit the app during testing
         self.bind("<Escape>", lambda e: self.destroy())
-        
+
         self.configure(bg="#f4e9e1")  # Set background color for the entire application
          # Define the hexadecimal color code
         self.custom_color = "#3e2d25"  # Replace this with your desired color code
@@ -132,6 +132,11 @@ class ThariBakhoorApp(tk.Tk):
         self.logo_label.destroy()
 
         # Load main screen widgets
+        # Add main_frame as the parent for all main screen widgets
+        self.main_frame = tk.Frame(self, bg="#f4e9e1")
+        self.main_frame.pack(expand=True)
+
+        # Load main screen widgets using main_frame as parent
         self.load_logo()
         self.load_date_time()
         self.load_buttons()
@@ -147,16 +152,19 @@ class ThariBakhoorApp(tk.Tk):
             image1 = Image.open("static/logo.png")
             image1 = image1.resize((300, 300), Image.Resampling.LANCZOS)  # Resize to fit the UI
             logo_image = ImageTk.PhotoImage(image1)
-            logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
+            # logo_label = tk.Label(self, image=logo_image, bg="#f4e9e1")
+            logo_label = tk.Label(self.main_frame, image=logo_image, bg="#f4e9e1")
             logo_label.image = logo_image
         except Exception as e:
             print(f"Warning: Logo image not loaded: {e}")
-            logo_label = tk.Label(self, text="Thari Bakhoor", font=("Arial", 24, "bold"), bg="#f4e9e1")
+            # logo_label = tk.Label(self, text="Thari Bakhoor", font=("Arial", 24, "bold"), bg="#f4e9e1")
+            logo_label = tk.Label(self.main_frame, text="Thari Bakhoor", font=("Arial", 24, "bold"), bg="#f4e9e1")
 
         logo_label.pack(pady=20)
 
     def load_date_time(self):
-        self.time_label = tk.Label(self, font=("DM Sans", 16), bg="#f4e9e1")  # Set background color for the label
+        # self.time_label = tk.Label(self, font=("DM Sans", 16), bg="#f4e9e1")  # Set background color for the label
+        self.time_label = tk.Label(self.main_frame, font=("DM Sans", 16), bg="#f4e9e1")  # Set background color for the label
         self.time_label.pack(pady=40)
         self.update_time()
 
@@ -171,7 +179,8 @@ class ThariBakhoorApp(tk.Tk):
 
         # Configure the font for the buttons
         style.configure("TButton", font=("DM Sans", 14))
-        self.load_buttons_frame = tk.Frame(self, bg="#f4e9e1")  # Store the buttons frame as an instance variable
+        # self.load_buttons_frame = tk.Frame(self, bg="#f4e9e1")  # Store the buttons frame as an instance variable
+        self.load_buttons_frame = tk.Frame(self.main_frame, bg="#f4e9e1")  # Store the buttons frame as an instance variable
         self.load_buttons_frame.pack(pady=20)
 
         self.person_button = ttk.Button(self.load_buttons_frame, text="Person", command=self.show_person_screen, width=10, padding=5)
@@ -1131,6 +1140,11 @@ class ThariBakhoorApp(tk.Tk):
         # Destroy the custom screen
         for widget in self.winfo_children():
             widget.destroy()
+
+        # Add main_frame as the parent for all main screen widgets
+        self.main_frame = tk.Frame(self, bg="#f4e9e1")
+        self.main_frame.pack(expand=True)
+
 
         # Reload the main screen buttons
         self.load_logo()
