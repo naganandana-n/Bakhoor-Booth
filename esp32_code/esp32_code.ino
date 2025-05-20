@@ -2,7 +2,7 @@
 #include "max6675.h"
 
 // HX711 pins
-#define HX711_DOUT 12
+#define HX711_DOUT 13 // 12 to 13
 #define HX711_SCK  14
 
 // MAX6675 pins
