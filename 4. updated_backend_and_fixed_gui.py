@@ -66,7 +66,12 @@ class ThariBakhoorApp(tk.Tk):
             self.door_ssr_pin = None
             self.fan_channels = []
 
-        self.geometry("600x1024")
+        # self.geometry("600x1024")
+        self.attributes("-fullscreen", True)
+
+        # Allow ESC to exit the app during testing
+        self.bind("<Escape>", lambda e: self.destroy())
+        
         self.configure(bg="#f4e9e1")  # Set background color for the entire application
          # Define the hexadecimal color code
         self.custom_color = "#3e2d25"  # Replace this with your desired color code
