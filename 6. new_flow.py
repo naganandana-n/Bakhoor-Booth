@@ -546,9 +546,6 @@ class ThariBakhoorApp(tk.Tk):
         # Stop any running threads to avoid interference
         self.running = False
         self.person_running = False 
-        if ENABLE_HARDWARE:
-            self.stop_weight_check_thread()
-            self.stop_weight_150_check_thread()
 
         # Lock the door
         if ENABLE_HARDWARE:
@@ -600,7 +597,7 @@ class ThariBakhoorApp(tk.Tk):
         # x_seconds = x
         # countdown = self.speed_duration
 
-        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
+        
 
         # Lock the door immediately
         if ENABLE_HARDWARE:
@@ -609,6 +606,7 @@ class ThariBakhoorApp(tk.Tk):
         # Start the speed countdown timer and update label immediately after locking door
         countdown = self.speed_duration
         self._update_person_mode_label("Speed countdown started...")
+        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
 
         # Start countdown thread for the main speed timer
         # countdown_start = time.time()
@@ -887,8 +885,6 @@ class ThariBakhoorApp(tk.Tk):
             # self.initialize_fans_0(self.kit, self.fan_channels)
             GPIO.output(self.fan_gpio_pin, GPIO.LOW)
         self.reset_assigned_value()
-        if self.person_running == True:
-                self.stop_weight_150_check_thread()
         if ENABLE_HARDWARE:
             # self.cooling_system_down()
             GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
@@ -934,8 +930,6 @@ class ThariBakhoorApp(tk.Tk):
     def show_custom_screen(self):
         self.running = False
         self.person_running = True
-        if ENABLE_HARDWARE:
-            self.start_person_150_check_thread()
 
         # Destroy the buttons frame
         self.load_buttons_frame.destroy()
@@ -1072,24 +1066,7 @@ class ThariBakhoorApp(tk.Tk):
         except ValueError:
             return 0
         
-    '''
     
-    def get_time_value(self):
-        try:
-            current_time = self.time_record["text"]
-            hours, minutes, seconds = map(int, current_time.split(":"))
-            total_seconds = (hours * 60 + minutes) * 60 + seconds
-
-            # Clamp time to spec durations
-            if total_seconds <= 150:
-                return 150
-            elif total_seconds <= 300:
-                return 300
-            else:
-                return 480
-        except ValueError:
-            return 0
-    '''
 
     def show_main_screen_buttons(self):
         # Destroy the custom screen
@@ -1109,9 +1086,7 @@ class ThariBakhoorApp(tk.Tk):
         self.running = True
         self.person_running = False
 
-        if ENABLE_HARDWARE:
-            self.stop_weight_150_check_thread()
-            self.start_weight_check_thread()
+        
 
     def cleanup_gpio(self):
         if ENABLE_HARDWARE:
@@ -1205,71 +1180,16 @@ class ThariBakhoorApp(tk.Tk):
         else:
             print("[GUI-only] Skipping weight check.")
 
-    def check_150_weight(self): 
-        if ENABLE_HARDWARE:
-            weight_safe = self.checking_150_weight()
-            if weight_safe:
-                print("Weight more than 150kg")
-                self.pi.write(self.door_ssr_pin, 1)
-            else:
-                print("Weight less than 150kg")
-                self.pi.write(self.door_ssr_pin, 0)
-        else:
-            print("[GUI-only] Skipping 150kg weight check.")
+    
 
     def initialize_weight(self):
-        '''
-        if ENABLE_HARDWARE:
-            self.hx.reset()
-            self.hx.zero()
-            # self.hx.tare()
-            ratio = 21.81341463414634
-            self.hx.set_scale_ratio(ratio)
-            time.sleep(1)
-            weight_ini = self.hx.get_weight_mean()
-            print(weight_ini)
-            time.sleep(5) 
-            time.sleep(1)  # Give time to stabilize
-            '''
-        
-            
         print("Weight initialization handled by ESP32 via serial.")
-        '''
-            print("Warming up the HX711 sensor...")
-            data = []
-            for _ in range(5):
-                reading = self.hx.get_raw_data_mean(5)
-                if reading is not None:
-                    data.append(reading)
-                time.sleep(0.5)
-
-            if len(data) >= 2:
-                print("Enough readings gathered, proceeding to zero scale.")
-                self.hx.zero()
-                ratio = 21.81341463414634
-                self.hx.set_scale_ratio(ratio)
-                weight_ini = self.hx.get_weight_mean()
-                print("Initial weight:", weight_ini)
-            else:
-                print("Not enough data to zero the scale safely.")
-        else:
-            print("[GUI-only] Skipping load cell initialization.")
-        '''
+        
 
     def checking_weight(self):
         if not ENABLE_HARDWARE:
             print("[GUI-only] Skipping weight check. Returning False.")
             return False
-
-        '''
-        weight_duration = 10  # Adjust as needed
-        start_time = time.time()
-        weights = []
-
-        while time.time() - start_time < weight_duration:
-            if not self.running:
-                print("Weight check interrupted by user")
-        '''
         try:
             self.serial.write(b'get_weight\n')
             response = self.serial.readline().decode().strip()
@@ -1280,22 +1200,11 @@ class ThariBakhoorApp(tk.Tk):
             else:
                 print(f"Unexpected weight response: {response}")
                 return False
-            '''
-            weight = self.hx.get_weight_mean()
-            weight_kg = max(weight / 1000.00, 0.00)
-            print(f"Weight: {weight_kg:.2f} kg")
-            weights.append(weight_kg)
-            time.sleep(0.5)
-            '''
+            
         except Exception as e:
             print(f"Serial error while reading weight: {e}")
             return False
 
-        '''
-        average_weight = sum(weights) / len(weights)
-        print(average_weight)
-        return average_weight > 4.00  # Return True if weight is safe
-        '''
 
     def _get_weight_value(self):
         try:
@@ -1327,107 +1236,10 @@ class ThariBakhoorApp(tk.Tk):
             print(f"[Temp Check] Serial error: {e}")
             return 0.0
     
-    def checking_150_weight(self):
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping 150kg weight check. Returning False.")
-            return False
+    
 
-        '''
-        weight_duration = 10  # Adjust as needed
-        start_time = time.time()
-        weights = []
-        
 
-        while time.time() - start_time < weight_duration:
-            if not self.person_running:
-                print("Weight check interrupted by user")
-        '''
-        try:
-            self.serial.write(b'get_weight\n')
-            response = self.serial.readline().decode().strip()
-            if response.startswith("KG:"):
-                weight_kg = float(response.split(":")[1])
-                print(f"Weight: {weight_kg:.2f} kg")
-                if weight_kg > 6.00:
-                    self.pi.write(self.door_ssr_pin, 1)
-                else:
-                    self.pi.write(self.door_ssr_pin, 0)
-                return weight_kg > 6.00
-            else:
-                print(f"Unexpected weight response: {response}")
-                return False
-            '''
-            weight = self.hx.get_weight_mean()
-            weight_kg = max(weight / 1000.00, 0.00)
-            print(f"Weight: {weight_kg:.2f} kg")
-            weights.append(weight_kg)
-            time.sleep(0.5)
-            '''
-        except Exception as e:
-            print(f"Serial error while reading 150kg weight: {e}")
-            return False
-        '''
-        average_weight = sum(weights) / len(weights)
-        print(average_weight)
-        return average_weight > 6.00  # Return True if weight is safe
-        '''
-
-    def schedule_weight_check(self):
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Weight check scheduling skipped.")
-            return
-        self.check_person_weight()
-        self.after(2000, self.schedule_weight_check)
-
-    def start_weight_check_thread(self):
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping start_weight_check_thread.")
-            return
-
-        # Define the function to be run by the thread
-        def weight_check_thread_func():
-            while self.running:
-                self.check_person_weight()
-                time.sleep(2)
-
-        self.weight_check_thread = threading.Thread(target=weight_check_thread_func)
-        self.weight_check_thread.daemon = True
-        self.weight_check_thread.start()
-
-    def start_person_150_check_thread(self):
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping start_person_150_check_thread.")
-            return
-
-        def person_check_thread_func():
-            while self.person_running:
-                self.check_150_weight()
-                time.sleep(2)
-
-        self.weight_150_check_thread = threading.Thread(target=person_check_thread_func)
-        self.weight_150_check_thread.daemon = True
-        self.weight_150_check_thread.start()
-
-    def stop_weight_check_thread(self):
-        self.running = False
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping stop_weight_check_thread.")
-            return
-        if self.weight_check_thread and self.weight_check_thread.is_alive():
-            self.weight_check_thread.join()
-
-    def stop_weight_150_check_thread(self):
-        self.person_running = False
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping stop_weight_150_check_thread.")
-            return
-        if hasattr(self, 'weight_150_check_thread') and self.weight_150_check_thread and self.weight_150_check_thread.is_alive():
-            self.weight_150_check_thread.join()
-
-    def is_weight_check_thread_running(self):
-        if not ENABLE_HARDWARE:
-            return False
-        return hasattr(self, 'weight_check_thread') and self.weight_check_thread and self.weight_check_thread.is_alive()
+    
 
 
     def read_temperature(self, pi, sensor, target_temp):
@@ -1435,33 +1247,6 @@ class ThariBakhoorApp(tk.Tk):
             print(f"[SIMULATED] Returning fixed GUI-mode temperature: {target_temp + 5}")
             return target_temp + 5  # Simulated temperature for GUI-only testing
 
-        '''
-        stop_time = time.time() + 600  # Set a 10-min timeout
-        float_temp = 0.0
-
-        while time.time() < stop_time and float_temp < target_temp:
-            c, d = pi.spi_read(sensor, 2)
-            if c == 2:
-                word = (d[0] << 8) | d[1]
-                if (word & 0x8006) == 0:
-                    t = (word >> 3) / 4.0
-                    float_temp = t
-                    print("Raw Thermocouple Reading:", word)
-                    print("Temperature (t):", t)
-                    print("Formatted Temperature (float_temp):", float_temp)
-                    print("Current Temp:", "{:.2f}".format(float_temp))
-
-                    # Emergency shutoff if temperature exceeds 450°C
-                    if float_temp >= 450:
-                        self.heater_off(self.pi, self.heater_ssr_pin)
-                        print(" EMERGENCY: Heater turned OFF due to temperature > 450°C")
-                        messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
-                        return float_temp  # Still return it so loop exits gracefully
-
-                    return float_temp
-                else:
-                    print(f"Bad reading: {word:016b}")
-        '''
         try:
             self.serial.write(b'get_temp\n')
             response = self.serial.readline().decode().strip()
@@ -1494,16 +1279,6 @@ class ThariBakhoorApp(tk.Tk):
         # stop_time = start_time + duration
         temp_readings = []
 
-        '''
-        while time.time() < stop_time:
-            c, d = pi.spi_read(sensor, 2)
-            if c == 2:
-                word = (d[0] << 8) | d[1]
-                if (word & 0x8006) == 0:
-                    t = (word >> 3) / 4.0
-                    temp_readings.append(t)
-                    print("Current Temp:", "{:.2f}".format(t))
-        '''
         while time.time() - start_time < duration:
             try:
                 self.serial.write(b'get_temp\n')
