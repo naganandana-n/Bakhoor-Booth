@@ -1059,7 +1059,8 @@ class ThariBakhoorApp(tk.Tk):
             self.assigned_heat = 170
         return self.assigned_heat
     
-    '''
+    # REMOVED COMMENT FROM HERE
+    
     # Assigns speed based on the levels of progress bars in the speed frame
     # duty_cycles[0] is made forthe main fan 90 x90 
     def check_speed_value(self):
@@ -1386,7 +1387,7 @@ class ThariBakhoorApp(tk.Tk):
             return 0
         
     '''
-    //3.
+    
     def get_time_value(self):
         try:
             current_time = self.time_record["text"]
