@@ -120,9 +120,7 @@ class ThariBakhoorApp(tk.Tk):
         # Schedule updating time every second
         self.update_time()
         
-        # Define the function to be run by the thread
-        if ENABLE_HARDWARE:
-            self.start_weight_check_thread()
+
         
     def load_logo(self):
         try:
@@ -173,8 +171,6 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons_frame.destroy()
         self.running = False
         self.person_running = True
-        if ENABLE_HARDWARE:
-            self.start_person_150_check_thread()
 
         self.center_frame = tk.Frame(self, bg="#f4e9e1")
         self.center_frame.pack(expand=True)
