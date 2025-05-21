@@ -653,6 +653,36 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
 
+        # Before starting the mode flow, process heat level and speed to set x_seconds, y_seconds, speed_duration
+        # Assign self.heat_level and self.speed_value from current selections
+        self.heat_level = getattr(self, "selected_heat_level", "Medium")
+        self.speed_value = getattr(self, "selected_speed_value", 2)
+
+        # Set x_seconds and y_seconds based on self.heat_level
+        if self.heat_level == "Low":
+            self.x_seconds = 110
+            self.y_seconds = 25
+        elif self.heat_level == "Medium":
+            self.x_seconds = 120
+            self.y_seconds = 30
+        elif self.heat_level == "High":
+            self.x_seconds = 130
+            self.y_seconds = 35
+        else:
+            self.x_seconds = 120
+            self.y_seconds = 30  # Default
+
+        # Set speed_duration based on self.speed_value
+        if self.speed_value == 1:
+            self.speed_duration = int(2.5 * 60)  # 2.5 minutes
+        elif self.speed_value == 2:
+            self.speed_duration = 5 * 60         # 5 minutes
+        elif self.speed_value == 3:
+            self.speed_duration = 8 * 60         # 8 minutes
+        else:
+            self.speed_duration = 5 * 60         # Default
+
+
         # Show a new frame for the sequence
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
@@ -663,10 +693,32 @@ class ThariBakhoorApp(tk.Tk):
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
     def _person_mode_flow(self):
-        # 1. Start heater for x_seconds
+        # Extract selected timing values
+        x = self.x_seconds
+        y = self.y_seconds
+        # x_seconds = x
+        # countdown = self.speed_duration
+
+        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
+
+        # Lock the door immediately
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+        print("Door locked")
+        # Start the speed countdown timer and update label immediately after locking door
+        countdown = self.speed_duration
+        self._update_person_mode_label("Speed countdown started...")
+
+        # Start countdown thread for the main speed timer
+        # countdown_start = time.time()
+        # Continue process label
+        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
+
+        # Turn on heater
         if ENABLE_HARDWARE:
             
             self.heater_on(self.pi, self.heater_ssr_pin)
+        '''
         # self.waiting_screen()
         self._update_person_mode_label(f"Heating... ({self.x_seconds}s)")
         heat_start_time = time.time()
@@ -718,9 +770,20 @@ class ThariBakhoorApp(tk.Tk):
         x_remain = max(0, self.x_seconds - elapsed)
         self._update_person_mode_label(f"Heating... ({x_remain}s left)")
         for i in range(x_remain):
+        '''
+
+        # Wait for 30 seconds, then unlock door
+        for i in range(30):
             time.sleep(1)
-            self._update_person_mode_label(f"Heating... ({x_remain - i}s left)")
+            # self._update_person_mode_label(f"Heating... ({x_remain - i}s left)")
+            self._update_person_mode_label(f"Heating... {x} seconds total\n{30 - i}s till door opens")
+
+        # Step 6: Unlock door to allow entry
+        self._update_person_mode_label("Unlocking door to allow entry...")
+
+        # Unlock the door to allow entry
         if ENABLE_HARDWARE:
+            '''
             self.heater_off(self.pi, self.heater_ssr_pin)
         # 3. Start speed_duration countdown
         self._update_person_mode_label("Main process running...")
@@ -743,11 +806,206 @@ class ThariBakhoorApp(tk.Tk):
                     self.heater_off(self.pi, self.heater_ssr_pin)
                 y_last_check = t
             self._update_person_mode_label(f"Main process running...\nTime left: {countdown - t}s")
+            '''
+            self.pi.write(self.door_ssr_pin, 0)
+        # print("Door unlocked after 30s for user entry")
+        time.sleep(2)
+        '''
+        # Continue heater for remaining x_seconds - 30s
+        remaining_x = max(0, x - 30)
+        for i in range(remaining_x):
             time.sleep(1)
         # After countdown, wait for weight = 0
-        self._update_person_mode_label("Process complete. Please exit...")
+        # self._update_person_mode_label("Process complete. Please exit...")
+            self._update_person_mode_label(f"Continuing heating... ({remaining_x - i}s left)")
+
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
+        '''
+        '''
+        # Step 7: Monitor weight and pause heater if no entry
+        weight_check_duration = 15
+        entry_detected = False
+        for _ in range(weight_check_duration):
+        '''
+        # Step 7: Monitor weight and control heater and warnings accordingly
+        weight = self._get_weight_value()
+        waited_while_zero = 0
+        while True:
+            weight = self._get_weight_value()
+            '''
+            if weight > 50:
+                entry_detected = True
+                break
+            time.sleep(1)
+        if not entry_detected:
+            self._update_person_mode_label("No entry detected. Heater paused.")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+
+            # Prompt user to enter and wait until entry is detected
+            while True:
+                self._update_person_mode_label("Please enter the chamber to continue.")
+                weight = self._get_weight_value()
+                if weight > 50:
+                    entry_detected = True
+            '''
+            if weight == 0:
+                self._update_person_mode_label("Waiting for entry...\nPlease enter the chamber.")
+                time.sleep(1)
+                waited_while_zero += 1
+                if waited_while_zero >= 15:
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    self._update_person_mode_label("Heater paused. Please enter the chamber.")
+                    # Wait until user enters
+                    while True:
+                        weight = self._get_weight_value()
+                        if weight > 50:
+                            if ENABLE_HARDWARE:
+                                self.heater_on(self.pi, self.heater_ssr_pin)
+                            break
+                        time.sleep(1)
+                    break
+            elif 0 < weight <= 50:
+                time.sleep(5)
+                if ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                self._update_person_mode_label("⚠ Warning: not an adult")
+                return
+            elif weight > 50:
+                break
+            else:
+                time.sleep(1)
+
+        
+        # Wait for x_seconds (minus any already elapsed during entry)
+        self._update_person_mode_label(f"Heating... ({self.x_seconds}s left)")
+        for i in range(self.x_seconds):
+            time.sleep(1)
+            self._update_person_mode_label(f"Heating... ({self.x_seconds - i}s left)")
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+
+        # Begin cyclic heating control until speed_duration is over
+        speed_start_time = time.time()
+        cycle_end_time = speed_start_time + self.speed_duration
+        '''
+        last_temp_check = time.time()
+        heater_on = False
+        y = self.y_seconds
+        '''
+        last_temp_check_time = 0
+
+        while time.time() < cycle_end_time:
+            '''
+            temp = self._get_temp_value()
+            if temp >= 150:
+                self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater off for {self.y_seconds}s.")
+                if ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+                time.sleep(self.y_seconds)
+                continue  # Skip turning on heater until temp drops
+            '''
+            # temp_check_time = time.time()
+            current_time = time.time()
+            elapsed_since_temp_check = current_time - last_temp_check_time
+
+            '''
+            # Turn heater on for Y seconds
+            self._update_person_mode_label(f"Heater ON for {self.y_seconds}s.")
+            if ENABLE_HARDWARE:
+                self.heater_on(self.pi, self.heater_ssr_pin)
+            time.sleep(self.y_seconds)
+            '''
+            # Check temperature every 5 seconds while the cycle runs
+            # while time.time() - temp_check_time < self.y_seconds and time.time() < cycle_end_time:
+            # Check temperature every 5 seconds
+            if elapsed_since_temp_check >= 5:
+                temp = self._get_temp_value()
+                last_temp_check_time = current_time
+                if temp >= 150:
+                    # self._update_person_mode_label(f"Temp {temp:.1f}°C too high. Heater OFF for {self.y_seconds}s.")
+                    self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {self.y_seconds}s.")
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    time.sleep(self.y_seconds)
+                    '''
+                    break
+                else:
+                    self._update_person_mode_label(f"Heater ON for {self.y_seconds}s.")
+                    if ENABLE_HARDWARE:
+                        self.heater_on(self.pi, self.heater_ssr_pin)
+                    time.sleep(self.y_seconds)
+                    self._update_person_mode_label(f"Heater OFF for {self.y_seconds}s.")
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    time.sleep(self.y_seconds)
+                    break
+                    '''
+                    # Turn heater off for Y seconds
+                    continue
+
+            # Turn heater OFF for Y seconds
+            self._update_person_mode_label(f"Heater OFF for {self.y_seconds}s.")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+            
+            for _ in range(self.y_seconds):
+                time.sleep(1)
+                if time.time() >= cycle_end_time:
+                    break
+                self._update_person_mode_label(f"Maintaining heat... {int(cycle_end_time - time.time())}s remaining")
+
+            if time.time() >= cycle_end_time:
+                break
+
+            # Check temperature again before turning heater ON
+            temp = self._get_temp_value()
+            if temp >= 150:
+                self._update_person_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
+                continue
+
+            # Turn heater ON for Y seconds
+            self._update_person_mode_label(f"Heater ON for {self.y_seconds}s.")
+            if ENABLE_HARDWARE:
+                self.heater_on(self.pi, self.heater_ssr_pin)
+            for _ in range(self.y_seconds):
+                time.sleep(1)
+                if time.time() >= cycle_end_time:
+                    break
+                self._update_person_mode_label(f"Maintaining heat... {int(cycle_end_time - time.time())}s remaining")
+
+        # Ensure heater is OFF at the end
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+            
+            # time.sleep(self.y_seconds)
+            '''
+            remaining_time = int(cycle_end_time - time.time())
+            self._update_person_mode_label(f"Maintaining heat... {remaining_time}s remaining")
+            '''
+        # Wait for exit (weight = 0), then unlock door after 10s
+            '''
+            # Restart heater and resume remaining X duration
+            if ENABLE_HARDWARE:
+                self.heater_on(self.pi, self.heater_ssr_pin)
+            self._update_person_mode_label(f"Resuming heater for remaining {x_seconds}s")
+            for t in range(x_seconds):
+                time.sleep(1)
+                self._update_person_mode_label(f"Heating... ({x_seconds - t}s left)")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+        else:
+            # Entry detected within 15s, continue heater for remaining x_seconds
+            self._update_person_mode_label(f"Continuing heater for remaining {x_seconds}s")
+            for t in range(x_seconds):
+                time.sleep(1)
+                self._update_person_mode_label(f"Heating... ({x_seconds - t}s left)")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+
+        '''
         waited_exit = 0
         while True:
             weight = self._get_weight_value()
@@ -769,6 +1027,8 @@ class ThariBakhoorApp(tk.Tk):
         self._update_person_mode_label("Done. Door unlocked.")
         time.sleep(3)
         self.person_mode_frame.after(0, self.show_main_screen_buttons)
+        '''
+        # print("Heater turned off after x seconds")
 
     # Autostart function that saved values to be used in the next screen
     def auto_start_save(self):
