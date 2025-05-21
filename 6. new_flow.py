@@ -47,8 +47,8 @@ class ThariBakhoorApp(tk.Tk):
             self.door_ssr_pin = None
             self.fan_channels = []
 
-        # self.geometry("600x1024")
-        self.attributes("-fullscreen", True)
+        self.geometry("600x1024")
+        # self.attributes("-fullscreen", True)
 
         self.bind("<Escape>", lambda e: self.destroy())
 
