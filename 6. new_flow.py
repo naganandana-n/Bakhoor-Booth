@@ -143,7 +143,10 @@ class ThariBakhoorApp(tk.Tk):
     def update_time(self):
         current_time = datetime.now().strftime("%A, %d %B %Y \n %I:%M:%S %p")
         self.time_label.config(text=current_time)
-        self.after(1000, self.update_time)  # Update time every second
+        # Only update if time_label still exists
+        if hasattr(self, "time_label") and self.time_label.winfo_exists():
+            self.time_label.config(text=current_time)
+            self.after(1000, self.update_time)
 
     def load_buttons(self):
         # Create a style object
