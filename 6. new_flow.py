@@ -28,11 +28,11 @@ class ThariBakhoorApp(tk.Tk):
                 self.destroy()
 
             
-            self.heater_ssr_pin = 20
-            self.door_ssr_pin = 16
+            self.heater_ssr_pin = 4
+            self.door_ssr_pin = 17
             self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
             self.pi.set_mode(self.door_ssr_pin, pigpio.OUTPUT)
-            self.fan_gpio_pin = 21
+            self.fan_gpio_pin = 18
             GPIO.setup(self.fan_gpio_pin, GPIO.OUT)
             self.pi.set_mode(self.fan_gpio_pin, pigpio.OUTPUT)
             self.pi.write(self.fan_gpio_pin, 0)
