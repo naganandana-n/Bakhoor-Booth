@@ -713,7 +713,7 @@ class ThariBakhoorApp(tk.Tk):
             for i in range(y):
                 if time.time() >= self.speed_end_time:
                     break
-                self._update_person_mode_label(f"Maintaining heat... {int(self.speed_end_time - time.time())}s remaining")
+                self._update_person_mode_label(f"Maintaining heat... HEATER OFF {int(self.speed_end_time - time.time())}s remaining for Z")
                 # Temperature safety
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
@@ -738,7 +738,7 @@ class ThariBakhoorApp(tk.Tk):
             for i in range(y):
                 if time.time() >= self.speed_end_time:
                     break
-                self._update_person_mode_label(f"Maintaining heat... {int(self.speed_end_time - time.time())}s remaining")
+                self._update_person_mode_label(f"Maintaining heat... HEATER ON {int(self.speed_end_time - time.time())}s remaining in Z")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
