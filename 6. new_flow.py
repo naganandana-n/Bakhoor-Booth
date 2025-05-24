@@ -12,7 +12,6 @@ if ENABLE_HARDWARE:
     import pigpio
     import RPi.GPIO as GPIO
     import atexit
-    from hx711 import HX711
     from adafruit_servokit import ServoKit
 
 
@@ -550,6 +549,10 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
 
+        # Start speed timer immediately after door locks (before preheat X starts)
+        self.speed_start_time = time.time()
+        self.speed_end_time = self.speed_start_time + getattr(self, "speed_duration", 300)
+
         # Before starting the mode flow, process heat level and speed to set x_seconds, y_seconds, speed_duration
         # Assign self.heat_level and self.speed_value from current selections
         self.heat_level = getattr(self, "selected_heat_level", "Medium")
@@ -579,6 +582,9 @@ class ThariBakhoorApp(tk.Tk):
         else:
             self.speed_duration = 5 * 60         # Default
 
+        # Also update speed_end_time to match selected speed_duration
+        self.speed_start_time = time.time()
+        self.speed_end_time = self.speed_start_time + self.speed_duration
 
         # Show a new frame for the sequence
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
@@ -590,175 +596,215 @@ class ThariBakhoorApp(tk.Tk):
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
     def _person_mode_flow(self):
-        # Extract selected timing values
+        # Implements the full person mode flow, using self.speed_start_time and self.speed_end_time for Y-cycle.
         x = self.x_seconds
         y = self.y_seconds
-        # x_seconds = x
-        # countdown = self.speed_duration
-
-        
-
-        # Lock the door immediately
+        # Use speed timer from self.speed_start_time and self.speed_end_time
+        # 1. Lock the door immediately
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
-        print("Door locked")
-        # Start the speed countdown timer and update label immediately after locking door
-        countdown = self.speed_duration
-        self._update_person_mode_label("Speed countdown started...")
-        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
+        self._update_person_mode_label("Door locked.\nPreheating...")
 
-        # Start countdown thread for the main speed timer
-        # countdown_start = time.time()
-        # Continue process label
-        self._update_person_mode_label(f"Starting process for {countdown}s\nHeating for {x}s")
-
-        # Turn on heater
+        # 2. Turn on heater and start X timer (preheat)
         if ENABLE_HARDWARE:
-            
             self.heater_on(self.pi, self.heater_ssr_pin)
-        
-
-        # Wait for 30 seconds, then unlock door
-        for i in range(30):
-            time.sleep(1)
-            # self._update_person_mode_label(f"Heating... ({x_remain - i}s left)")
-            self._update_person_mode_label(f"Heating... {x} seconds total\n{30 - i}s till door opens")
-
-        # Step 6: Unlock door to allow entry
-        self._update_person_mode_label("Unlocking door to allow entry...")
-
-        # Unlock the door to allow entry
-        if ENABLE_HARDWARE:
-            self.pi.write(self.door_ssr_pin, 0)
-        # print("Door unlocked after 30s for user entry")
-        time.sleep(2)
-        
-        # Step 7: Monitor weight and control heater and warnings accordingly
-        weight = self._get_weight_value()
+        preheat_start = time.time()
+        preheat_elapsed = 0
+        entry_detected = False
+        paused = False
+        pause_start = None
         waited_while_zero = 0
-        while True:
-            weight = self._get_weight_value()
-            if weight == 0:
-                self._update_person_mode_label("Waiting for entry...\nPlease enter the chamber.")
+        fan_10_after_unlock = False
+        # 3. After 30s, unlock door for entry, but continue X timer (pause/resume if no entry)
+        while preheat_elapsed < x:
+            now = time.time()
+            preheat_elapsed = int(now - preheat_start)
+            seconds_left = max(0, x - preheat_elapsed)
+            if preheat_elapsed < 30:
+                self._update_person_mode_label(f"Preheating...\n{seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
                 time.sleep(1)
-                waited_while_zero += 1
-                if waited_while_zero >= 15:
+                continue
+            # Unlock the door at 30s if not already unlocked
+            if preheat_elapsed == 30:
+                self._update_person_mode_label("Unlocking door. Please enter chamber.")
+                if ENABLE_HARDWARE:
+                    self.pi.write(self.door_ssr_pin, 0)
+                time.sleep(2)
+                # After unlocking door, immediately turn fan ON at 10% PWM
+                if ENABLE_HARDWARE:
+                    self._set_fan_pwm(10)  # Fan at 10% after door unlocks
+                fan_10_after_unlock = True
+            # After 30s: check for entry
+            weight = self._get_weight_value()
+            # If no entry (weight == 0), pause X timer after 15s
+            if not entry_detected:
+                if weight == 0:
+                    self._update_person_mode_label("Waiting for entry...\nPlease enter the chamber.")
+                    waited_while_zero += 1
+                    if waited_while_zero >= 15:
+                        # Pause X timer, turn off heater, display message, wait for entry
+                        paused = True
+                        pause_start = time.time()
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        self._update_person_mode_label("Heater paused. Please enter chamber.")
+                        while True:
+                            weight = self._get_weight_value()
+                            if weight > 50:
+                                entry_detected = True
+                                paused = False
+                                if ENABLE_HARDWARE:
+                                    self.heater_on(self.pi, self.heater_ssr_pin)
+                                # Resume X timer from where left
+                                pause_duration = int(time.time() - pause_start)
+                                preheat_start += pause_duration
+                                break
+                            time.sleep(1)
+                        continue
+                    time.sleep(1)
+                    continue
+                elif 0 < weight <= 50:
+                    # Not an adult
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
-                    self._update_person_mode_label("Heater paused. Please enter the chamber.")
-                    # Wait until user enters
-                    while True:
-                        weight = self._get_weight_value()
-                        if weight > 50:
-                            if ENABLE_HARDWARE:
-                                self.heater_on(self.pi, self.heater_ssr_pin)
-                            break
-                        time.sleep(1)
-                    break
-            elif 0 < weight <= 50:
-                time.sleep(5)
-                if ENABLE_HARDWARE:
-                    self.heater_off(self.pi, self.heater_ssr_pin)
-                self._update_person_mode_label("⚠ Warning: not an adult")
-                return
-            elif weight > 50:
-                break
-            else:
-                time.sleep(1)
-
-        
-        # Wait for x_seconds (minus any already elapsed during entry)
-        self._update_person_mode_label(f"Heating... ({self.x_seconds}s left)")
-        for i in range(self.x_seconds):
+                    self._update_person_mode_label("Warning: not an adult.\nHeater OFF.")
+                    time.sleep(5)
+                    return
+                elif weight > 50:
+                    entry_detected = True
+                    # Continue X timer, heater stays ON
+                    self._update_person_mode_label(f"Entry detected.\nContinuing preheat: {seconds_left}s left.")
+                    time.sleep(1)
+                    continue
+            # If already detected, just continue X timer
+            self._update_person_mode_label(f"Preheating... ({seconds_left}s left)")
             time.sleep(1)
-            self._update_person_mode_label(f"Heating... ({self.x_seconds - i}s left)")
+        # End of X timer: heater OFF
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
+        self._update_person_mode_label("Preheat complete. Heater OFF.")
+        time.sleep(1)
 
-        # Begin cyclic heating control until speed_duration is over
-        speed_start_time = time.time()
-        cycle_end_time = speed_start_time + self.speed_duration
-        last_temp_check_time = 0
-
-        while time.time() < cycle_end_time:
-            # temp_check_time = time.time()
-            current_time = time.time()
-            elapsed_since_temp_check = current_time - last_temp_check_time
-
-            # Check temperature every 5 seconds while the cycle runs
-            # while time.time() - temp_check_time < self.y_seconds and time.time() < cycle_end_time:
-            # Check temperature every 5 seconds
-            if elapsed_since_temp_check >= 5:
+        # 4. Cyclic Y timer: alternate heater ON/OFF every Y seconds for speed_duration, with temperature checks
+        # Use self.speed_start_time and self.speed_end_time as the timer.
+        last_temp_check = 0
+        # No further weight checks after person entry (per requirements)
+        while time.time() < self.speed_end_time:
+            now = time.time()
+            # Check temp every 5s
+            if now - last_temp_check >= 5:
                 temp = self._get_temp_value()
-                last_temp_check_time = current_time
+                last_temp_check = now
                 if temp >= 150:
-                    # self._update_person_mode_label(f"Temp {temp:.1f}°C too high. Heater OFF for {self.y_seconds}s.")
-                    self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {self.y_seconds}s.")
+                    self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
-                    time.sleep(self.y_seconds)
-                    # Turn heater off for Y seconds
+                    # Wait for Y seconds before continuing
+                    for i in range(y):
+                        if time.time() >= self.speed_end_time:
+                            break
+                        self._update_person_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
+                        time.sleep(1)
                     continue
-
-            # Turn heater OFF for Y seconds
-            self._update_person_mode_label(f"Heater OFF for {self.y_seconds}s.")
+            # Heater OFF Y seconds
+            self._update_person_mode_label(f"Heater OFF for {y}s.")
             if ENABLE_HARDWARE:
                 self.heater_off(self.pi, self.heater_ssr_pin)
-            
-            for _ in range(self.y_seconds):
-                time.sleep(1)
-                if time.time() >= cycle_end_time:
+            for i in range(y):
+                if time.time() >= self.speed_end_time:
                     break
-                self._update_person_mode_label(f"Maintaining heat... {int(cycle_end_time - time.time())}s remaining")
-
-            if time.time() >= cycle_end_time:
+                self._update_person_mode_label(f"Maintaining heat... {int(self.speed_end_time - time.time())}s remaining")
+                # Temperature safety
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+            if time.time() >= self.speed_end_time:
                 break
-
-            # Check temperature again before turning heater ON
+            # Check temp before ON
             temp = self._get_temp_value()
             if temp >= 150:
                 self._update_person_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
                 continue
-
-            # Turn heater ON for Y seconds
-            self._update_person_mode_label(f"Heater ON for {self.y_seconds}s.")
+            # Heater ON Y seconds
+            self._update_person_mode_label(f"Heater ON for {y}s.")
             if ENABLE_HARDWARE:
                 self.heater_on(self.pi, self.heater_ssr_pin)
-            for _ in range(self.y_seconds):
-                time.sleep(1)
-                if time.time() >= cycle_end_time:
+            for i in range(y):
+                if time.time() >= self.speed_end_time:
                     break
-                self._update_person_mode_label(f"Maintaining heat... {int(cycle_end_time - time.time())}s remaining")
-
+                self._update_person_mode_label(f"Maintaining heat... {int(self.speed_end_time - time.time())}s remaining")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
         # Ensure heater is OFF at the end
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
-            
-            # time.sleep(self.y_seconds)
-        # Wait for exit (weight = 0), then unlock door after 10s
-            
-        waited_exit = 0
-        while True:
-            weight = self._get_weight_value()
-            if weight == 0:
-                break
-            time.sleep(1)
-            waited_exit += 1
-        # Turn off heater after 5s
-        self._update_person_mode_label("Turning off heater...")
-        time.sleep(5)
+        self._update_person_mode_label("Heating cycle complete. Heater OFF.")
+        time.sleep(1)
+
+        # 5. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
+        self._update_person_mode_label("Cooling: Fan 10% for 30s...")
         if ENABLE_HARDWARE:
-            self.heater_off(self.pi, self.heater_ssr_pin)
-        # Unlock door after 10s
-        self._update_person_mode_label("Unlocking door soon...")
-        time.sleep(10)
+            self._set_fan_pwm(10)
+        for i in range(30):
+            self._update_person_mode_label(f"Cooling: Fan 10% for {30-i}s")
+            time.sleep(1)
+        self._update_person_mode_label("Cooling: Fan 100% for 3 min...")
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(100)
+        for i in range(180):
+            self._update_person_mode_label(f"Cooling: Fan 100% for {180-i}s")
+            time.sleep(1)
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(0)
+        self._update_person_mode_label("Cooling complete. Fan OFF.")
+        time.sleep(1)
+
+        # 6. Show 5-minute timer display (user can see countdown)
+        self._update_person_mode_label("Please wait: 5 min timer for safety.")
+        for i in range(5*60):
+            mins = (5*60 - i) // 60
+            secs = (5*60 - i) % 60
+            self._update_person_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining")
+            # Also check temp every 5s, turn off heater if >150C
+            if i % 5 == 0:
+                temp = self._get_temp_value()
+                if temp >= 150 and ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+            time.sleep(1)
+        self._update_person_mode_label("Session complete. Unlocking door.")
+        # 7. Unlock door
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 0)
-            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
+        time.sleep(2)
         self._update_person_mode_label("Done. Door unlocked.")
         time.sleep(3)
         self.person_mode_frame.after(0, self.show_main_screen_buttons)
-        
+
+    def _set_fan_pwm(self, percent):
+        # Helper to set fan GPIO PWM (software fallback if no hardware PWM)
+        if not ENABLE_HARDWARE:
+            print(f"[SIMULATED] Fan set to {percent}% PWM")
+            return
+        # Use pigpio hardware PWM if available
+        try:
+            # pigpio.set_PWM_dutycycle(gpio, dutycycle) where dutycycle is 0-255
+            duty = int(percent * 255 / 100)
+            self.pi.set_PWM_dutycycle(self.fan_gpio_pin, duty)
+        except Exception as e:
+            print(f"Error setting fan PWM: {e}")
     
     # Acts as a preheating screen, displays data while heating element reaches targettemp[1]
     def waiting_screen(self):
