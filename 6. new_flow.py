@@ -632,7 +632,7 @@ class ThariBakhoorApp(tk.Tk):
                 time.sleep(2)
                 # After unlocking door, immediately turn fan ON at 10% PWM
                 if ENABLE_HARDWARE:
-                    self._set_fan_pwm(10)  # Fan at 10% after door unlocks
+                    self._set_fan_pwm(25)  # Fan at 10% after door unlocks
                 fan_10_after_unlock = True
             # After 30s: check for entry
             weight = self._get_weight_value()
@@ -761,7 +761,7 @@ class ThariBakhoorApp(tk.Tk):
         # 5. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
         self._update_person_mode_label("Cooling: Fan 10% for 30s...")
         if ENABLE_HARDWARE:
-            self._set_fan_pwm(10)
+            self._set_fan_pwm(25)
         for i in range(30):
             self._update_person_mode_label(f"Cooling: Fan 10% for {30-i}s")
             time.sleep(1)
