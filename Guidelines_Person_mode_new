@@ -7,16 +7,19 @@
  - Start the countdown for the speed timer
  - heater begins to run (for x seconds) 
  - after 30 seconds, unlock the door, and allow the person to enter.
+ - TURN ON THE FAN AT 10% PWM.
  - Check the weight:
         - if the weight is 0 for 15 seconds, then turn off the heater and pause the timer X.
         - Prompt the user to enter the chamber
-        - If the user enters the chamber (weight > 50), continue the heater until X reaches 0.
+        - If the user enters the chamber (weight > 50), continue the heater until X (which was previously started) reaches 0.
         
-        - if the weight is lower or equal to than 50 kg but greater than 0, turn off the heater after 5 seconds and display "Warning: not an adult" 
+        - if the weight is lower or equal to than 50 kg but greater than 0, turn off the heater after 5 seconds and display "Warning: not an adult". Pause X
 
         - if the weight of the person is greater than 50:
-                - continue the heating operation until X reaches 0.
+                - continue the heating operation until X (previously paused X timer) reaches 0.
                 - After that, turn off the heater for Y seconds.
                 - After this, turn on the heater for Y seconds.
                 - keep doing this cycle, until the timer 'Speed' comes to 0
                 - while doing this cycle, keep checking the temperature sensor every 5 seconds. If the temperature exceeds 150, turn off the heater for Y seconds and start the cycle after that.
+
+- once the 'Speed' timer comes to an end, run the fans at 100% PWM for 3 minutes and have a message on the screen, counting down the time since speed timer ended for 5 minutes (5 minutes timer after speed timer ends)
