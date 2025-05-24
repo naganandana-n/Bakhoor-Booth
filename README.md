@@ -24,7 +24,7 @@ xrandr --output HDMI-1 --rotate left
 xinput set-prop "wch.cn USB2IIC_CTP_CONTROL" "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1
 ```
 
-### 4. Reset Display Orientation (Landscape) - for Debugging
+### 5. Reset Display Orientation (Landscape) - for Debugging
 ```bash
 xrandr --output HDMI-1 --rotate normal
 xinput set-prop "wch.cn USB2IIC_CTP_CONTROL" "Coordinate Transformation Matrix" 1 0 0 0 1 0 0 0 1
