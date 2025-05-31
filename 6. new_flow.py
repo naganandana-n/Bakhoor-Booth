@@ -27,7 +27,7 @@ class ThariBakhoorApp(tk.Tk):
                 self.destroy()
 
             
-            self.heater_ssr_pin = 4
+            self.heater_ssr_pin = 5 #4
             self.door_ssr_pin = 17
             self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
             self.pi.set_mode(self.door_ssr_pin, pigpio.OUTPUT)
