@@ -1952,7 +1952,7 @@ class ThariBakhoorApp(tk.Tk):
         # Disable heater
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
-            self.pi.write(self.door_ssr_pin, 1)  # Unlock the door
+            self.pi.write(self.door_ssr_pin, 0)  # Unlock the door
             # self.initialize_fans_0(self.kit, self.fan_channels)  # Turn off fans
             GPIO.output(self.fan_gpio_pin, GPIO.LOW)
 
