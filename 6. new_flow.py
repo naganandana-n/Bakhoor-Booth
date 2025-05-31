@@ -1935,7 +1935,7 @@ class ThariBakhoorApp(tk.Tk):
             self.heater_off(self.pi, self.heater_ssr_pin)
             self.pi.write(self.door_ssr_pin, 0)  # Unlock the door
             # self.initialize_fans_0(self.kit, self.fan_channels)  # Turn off fans
-            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
+            self._set_fan_pwm(0)
 
         for widget in self.winfo_children():
             if isinstance(widget, tk.Label) and widget in [self.logo_label, self.time_label]:
