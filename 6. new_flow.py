@@ -26,7 +26,6 @@ class ThariBakhoorApp(tk.Tk):
             if not self.pi.connected:
                 self.destroy()
 
-            
             self.heater_ssr_pin = 5 #4
             self.door_ssr_pin = 17
             self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
@@ -37,7 +36,8 @@ class ThariBakhoorApp(tk.Tk):
             self.pi.write(self.fan_gpio_pin, 0)
             self.serial = serial.Serial("/dev/ttyS0", 9600, timeout=2)
             atexit.register(self.cleanup_gpio)
-        
+            # Lock the door by default for safety at startup
+            self.pi.write(self.door_ssr_pin, 1)
         else:
             self.pi = None
             self.kit = None
@@ -94,6 +94,9 @@ class ThariBakhoorApp(tk.Tk):
         self.after(120000, self.on_splash_click, None)  # fallback auto-continue
 
     def on_splash_click(self, event):
+        # Lock the door for safety at splash click (before main menu)
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
         self.unbind("<Button-1>")
         self.logo_label.destroy()
         self.touch_label.destroy()
@@ -103,6 +106,8 @@ class ThariBakhoorApp(tk.Tk):
         # Stops all the fans
         if ENABLE_HARDWARE:
             GPIO.output(self.fan_gpio_pin, GPIO.LOW)
+            # Lock the door for safety at main menu
+            self.pi.write(self.door_ssr_pin, 1)
 
         # Destroy splash screen widgets
         self.logo_label.destroy()
