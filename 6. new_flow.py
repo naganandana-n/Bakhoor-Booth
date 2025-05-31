@@ -110,7 +110,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
-        self.after(120000, self.on_splash_click, None)  # fallback auto-continue
+        # self.after(120000, self.on_splash_click, None)  # fallback auto-continue
 
     def on_splash_click(self, event):
         # Clear idle timer if active
