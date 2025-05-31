@@ -465,10 +465,6 @@ class ThariBakhoorApp(tk.Tk):
     def start_clothes_mode_sequence(self):
         # Stop any running threads to avoid interference
         self.running = False
-        # Lock the door
-        if ENABLE_HARDWARE:
-            self.pi.write(self.door_ssr_pin, 1)
-
         # Assign heat and speed from current selections if available, else defaults
         self.clothes_heat_level = getattr(self, "selected_clothes_heat_level", "Medium")
         self.clothes_speed_value = getattr(self, "selected_clothes_speed_value", 2)
@@ -498,8 +494,8 @@ class ThariBakhoorApp(tk.Tk):
             self.clothes_speed_duration = 300
 
         # Also update speed_end_time to match selected speed_duration
-        self.clothes_speed_start_time = time.time()
-        self.clothes_speed_end_time = self.clothes_speed_start_time + self.clothes_speed_duration
+        self.clothes_speed_start_time = None  # will be set after weight=0
+        self.clothes_speed_end_time = None
 
         # Show a new frame for the sequence
         self.clothes_mode_frame = tk.Frame(self, bg="#f4e9e1")
@@ -507,111 +503,153 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.clothes_mode_label.pack(pady=40)
 
+        # Add Safe Mode button (always available)
+        safe_button = tk.Button(
+            self.clothes_mode_frame,
+            text="Safe Mode",
+            command=self.activate_safe_mode,
+            font=("DM Sans", 12)
+        )
+        safe_button.pack(pady=10)
+
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
 
     def _clothes_mode_flow(self):
-        # Implements the full clothes mode flow, mirrors surrounding mode logic (no weight checks)
+        # Implements the new clothes mode logic with weight check and prompts.
         x = getattr(self, "clothes_x_seconds", 120)
         y = getattr(self, "clothes_y_seconds", 30)
         z = getattr(self, "clothes_speed_duration", 300)
-        # 1. Lock the door immediately
+        # 1. Prompt user to hang clothes and close door
+        self._update_clothes_mode_label("Please hang clothes in the chamber\nand close the door.\n\nPress Safe Mode anytime if needed.")
+        # Lock the door
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
-        self._update_clothes_mode_label("Door locked.\nPreheating...")
+        time.sleep(2)
 
-        # 2. Turn on heater and start X timer (preheat)
+        # 2. Check the weight
+        self._update_clothes_mode_label("Checking for clothes weight...\n(Waiting for weight to appear)")
+        if ENABLE_HARDWARE:
+            weight = self._get_weight_value()
+        else:
+            weight = 1  # Simulate weight present
+        # If weight is not 0, unlock the door and wait until weight becomes 0
+        if weight != 0:
+            self._update_clothes_mode_label("Detected clothes inside.\nUnlocking door for removal.")
+            if ENABLE_HARDWARE:
+                self.pi.write(self.door_ssr_pin, 0)
+            time.sleep(2)
+            while True:
+                if ENABLE_HARDWARE:
+                    weight = self._get_weight_value()
+                else:
+                    weight = 0  # Simulate removal after a moment
+                if weight == 0:
+                    break
+                self._update_clothes_mode_label("Waiting for clothes to be removed...\nWeight detected.\nPlease remove all clothes and close door.")
+                time.sleep(2)
+            self._update_clothes_mode_label("All clothes removed.\nLocking door.")
+            if ENABLE_HARDWARE:
+                self.pi.write(self.door_ssr_pin, 1)
+            time.sleep(2)
+
+        # Now wait for user to add clothes and close the door (weight becomes nonzero)
+        self._update_clothes_mode_label("Please hang clothes and close the door.\nWaiting for clothes to be detected...")
+        while True:
+            if ENABLE_HARDWARE:
+                weight = self._get_weight_value()
+            else:
+                weight = 2  # Simulate clothes added
+            if weight > 0:
+                break
+            time.sleep(2)
+        self._update_clothes_mode_label("Clothes detected. Locking door and starting cycle.")
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+        time.sleep(2)
+
+        # 3. Start Speed timer and begin heat cycle
+        self.clothes_speed_start_time = time.time()
+        self.clothes_speed_end_time = self.clothes_speed_start_time + z
+
+        # Heater ON for X seconds (preheat)
+        self._update_clothes_mode_label(f"Preheating... Heater ON for {x}s")
         if ENABLE_HARDWARE:
             self.heater_on(self.pi, self.heater_ssr_pin)
         preheat_start = time.time()
-        preheat_elapsed = 0
-        while preheat_elapsed < x:
-            now = time.time()
-            preheat_elapsed = int(now - preheat_start)
-            seconds_left = max(0, x - preheat_elapsed)
-            if preheat_elapsed < 30:
-                self._update_clothes_mode_label(f"Preheating...\n{seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
-                time.sleep(1)
-                continue
-            # Unlock the door at 30s if not already unlocked
-            if preheat_elapsed == 30:
-                self._update_clothes_mode_label("Unlocking door. Please enter chamber.")
-                if ENABLE_HARDWARE:
-                    self.pi.write(self.door_ssr_pin, 0)
-                time.sleep(2)
-                # After unlocking door, immediately turn fan ON at 10% PWM
-                if ENABLE_HARDWARE:
-                    self._set_fan_pwm(25)
-            self._update_clothes_mode_label(f"Preheating... ({seconds_left}s left)")
+        while True:
+            elapsed = int(time.time() - preheat_start)
+            if elapsed >= x:
+                break
+            seconds_left = max(0, x - elapsed)
+            self._update_clothes_mode_label(f"Preheating... Heater ON\n{seconds_left}s left")
             time.sleep(1)
-        # End of X timer: heater OFF
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
-        self._update_clothes_mode_label("Preheat complete. Heater OFF.")
+        self._update_clothes_mode_label("Preheat done. Starting main heat cycle.")
         time.sleep(1)
 
-        # 3. Cyclic Y timer: alternate heater ON/OFF every Y seconds for z duration, with temperature checks
-        speed_start_time = time.time()
-        speed_end_time = speed_start_time + z
+        # After X seconds, turn on fan at 25% PWM
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(25)
+
+        # 4. Alternate heater ON/OFF every Y seconds, check temp every 5s, for duration of Z (speed) timer
         last_temp_check = 0
-        while time.time() < speed_end_time:
+        while time.time() < self.clothes_speed_end_time:
             now = time.time()
             # Check temp every 5s
             if now - last_temp_check >= 5:
                 temp = self._get_temp_value()
                 last_temp_check = now
                 if temp >= 150:
-                    self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                    self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
-                    # Wait for Y seconds before continuing
+                    # Wait for Y seconds
                     for i in range(y):
-                        if time.time() >= speed_end_time:
+                        if time.time() >= self.clothes_speed_end_time:
                             break
                         self._update_clothes_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
                         time.sleep(1)
                     continue
-            # Heater OFF Y seconds
-            self._update_clothes_mode_label(f"Heater OFF for {y}s.")
-            if ENABLE_HARDWARE:
-                self.heater_off(self.pi, self.heater_ssr_pin)
-            for i in range(y):
-                if time.time() >= speed_end_time:
-                    break
-                z_remaining = max(0, int(speed_end_time - time.time()))
-                y_remaining = max(0, y - i)
-                self._update_clothes_mode_label(f"HEATER OFF | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
-                if (time.time() - last_temp_check) >= 5:
-                    temp = self._get_temp_value()
-                    last_temp_check = time.time()
-                    if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
-                        if ENABLE_HARDWARE:
-                            self.heater_off(self.pi, self.heater_ssr_pin)
-                        break
-                time.sleep(1)
-            if time.time() >= speed_end_time:
-                break
-            # Check temp before ON
-            temp = self._get_temp_value()
-            if temp >= 150:
-                self._update_clothes_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
-                continue
-            # Heater ON Y seconds
+            # Heater ON for Y seconds
             self._update_clothes_mode_label(f"Heater ON for {y}s.")
             if ENABLE_HARDWARE:
                 self.heater_on(self.pi, self.heater_ssr_pin)
             for i in range(y):
-                if time.time() >= speed_end_time:
+                if time.time() >= self.clothes_speed_end_time:
                     break
-                z_remaining = max(0, int(speed_end_time - time.time()))
+                z_remaining = max(0, int(self.clothes_speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
-                self._update_clothes_mode_label(f"HEATER ON | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                self._update_clothes_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
+                # Check temp every 5s
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+            if time.time() >= self.clothes_speed_end_time:
+                break
+            # Heater OFF for Y seconds
+            self._update_clothes_mode_label(f"Heater OFF for {y}s.")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+            for i in range(y):
+                if time.time() >= self.clothes_speed_end_time:
+                    break
+                z_remaining = max(0, int(self.clothes_speed_end_time - time.time()))
+                y_remaining = max(0, y - i)
+                self._update_clothes_mode_label(f"HEATER OFF | Z: {z_remaining}s | Y: {y_remaining}s")
+                # Check temp every 5s
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
@@ -622,30 +660,21 @@ class ThariBakhoorApp(tk.Tk):
         self._update_clothes_mode_label("Heating cycle complete. Heater OFF.")
         time.sleep(1)
 
-        # 4. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
-        self._update_clothes_mode_label("Cooling: Fan 10% for 30s...")
-        if ENABLE_HARDWARE:
-            self._set_fan_pwm(25)
-        for i in range(30):
-            self._update_clothes_mode_label(f"Cooling: Fan 10% for {30-i}s")
-            time.sleep(1)
-        self._update_clothes_mode_label("Cooling: Fan 100% for 3 min...")
+        # 5. At end of Speed timer, run fan at 100% for 3 min, then show 5-min cooldown
+        self._update_clothes_mode_label("Post-cycle: Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
             self._set_fan_pwm(100)
         for i in range(180):
-            self._update_clothes_mode_label(f"Cooling: Fan 100% for {180-i}s")
+            self._update_clothes_mode_label(f"Fan 100%: {180-i}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
             self._set_fan_pwm(0)
-        self._update_clothes_mode_label("Cooling complete. Fan OFF.")
-        time.sleep(1)
-
-        # 5. Show 5-minute timer display (user can see countdown)
-        self._update_clothes_mode_label("Please wait: 5 min timer for safety.")
+        self._update_clothes_mode_label("Cooldown: 5 min safety timer.")
+        # 6. Show 5-minute cooldown screen
         for i in range(5*60):
             mins = (5*60 - i) // 60
             secs = (5*60 - i) % 60
-            self._update_clothes_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining")
+            self._update_clothes_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining (Cooldown)")
             # Also check temp every 5s, turn off heater if >150C
             if i % 5 == 0:
                 temp = self._get_temp_value()
@@ -653,7 +682,7 @@ class ThariBakhoorApp(tk.Tk):
                     self.heater_off(self.pi, self.heater_ssr_pin)
             time.sleep(1)
         self._update_clothes_mode_label("Session complete. Unlocking door.")
-        # 6. Unlock door
+        # Unlock door
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 0)
         time.sleep(2)
