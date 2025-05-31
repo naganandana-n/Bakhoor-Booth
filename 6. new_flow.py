@@ -141,9 +141,10 @@ class ThariBakhoorApp(tk.Tk):
     def load_date_time(self):
         self.time_label = tk.Label(self.main_frame, font=("DM Sans", 16), bg="#f4e9e1")  # Set background color for the label
         self.time_label.pack(pady=40)
-        self.update_time()
 
     def update_time(self):
+        if not hasattr(self, "time_label") or not self.time_label.winfo_exists():
+            return
         if not hasattr(self, "main_frame") or not self.main_frame.winfo_exists():
             return  # Stop updating if main_frame doesn't exist
         current_time = datetime.now().strftime("%A, %d %B %Y \n %I:%M:%S %p")
@@ -1668,16 +1669,15 @@ class ThariBakhoorApp(tk.Tk):
         self.main_frame = tk.Frame(self, bg="#f4e9e1")
         self.main_frame.pack(expand=True)
 
-
         # Reload the main screen buttons
         self.load_logo()
         self.load_date_time()
         self.load_buttons()
+        # Ensure time is restarted only when the main page is loaded
+        self.update_time()
     
         self.running = True
         self.person_running = False
-
-        
 
     def cleanup_gpio(self):
         if ENABLE_HARDWARE:
