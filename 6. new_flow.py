@@ -71,8 +71,17 @@ class ThariBakhoorApp(tk.Tk):
         self.idle_timer = self.after(60000, self.return_to_splash_screen)
 
     def return_to_splash_screen(self):
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+            self.idle_timer = None
+
+        self.running = False
+        self.person_running = False
+
+        # Destroy all frames/widgets
         for widget in self.winfo_children():
             widget.destroy()
+
         self.splash_screen()
 
     def splash_screen(self):
@@ -104,12 +113,25 @@ class ThariBakhoorApp(tk.Tk):
         self.after(120000, self.on_splash_click, None)  # fallback auto-continue
 
     def on_splash_click(self, event):
-        # Lock the door for safety at splash click (before main menu)
+        # Clear idle timer if active
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+            self.idle_timer = None
+
+        # Stop any threads or flows
+        self.running = False
+        self.person_running = False
+
+        # Destroy all frames/widgets
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        # Lock the door for safety (if hardware enabled)
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
+
+        # Load main screen
         self.unbind("<Button-1>")
-        self.logo_label.destroy()
-        self.touch_label.destroy()
         self.load_main_screen()
 
     def load_main_screen(self):
