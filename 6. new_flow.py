@@ -847,6 +847,11 @@ class ThariBakhoorApp(tk.Tk):
     def start_surrounding_mode_sequence(self):
         # Stop any running threads to avoid interference
         self.running = False
+        # Destroy the options page frames
+        self.time_frame.destroy()
+        self.heat_frame.destroy()
+        self.speed_frame.destroy()
+        self.button_panel_frame.destroy()
         # Lock the door
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
