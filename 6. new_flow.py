@@ -62,24 +62,8 @@ class ThariBakhoorApp(tk.Tk):
         self.running = True
         self.person_running = False
         self.targettemp = [40, 120]
-        # Idle timer for splash/main screen timeout
-        self.idle_timer = None
-        self.bind_all("<Button-1>", self.reset_idle_timer)
-        self.reset_idle_timer()
         # Splash screen
         self.splash_screen()
-
-    def reset_to_splash_screen(self):
-        for widget in self.winfo_children():
-            widget.destroy()
-        self.splash_screen()
-
-    def reset_idle_timer(self, event=None):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-        # Don't trigger the timeout during mode flows (check current state)
-        if hasattr(self, 'center_frame') and self.center_frame.winfo_exists():
-            self.idle_timer = self.after(60000, self.reset_to_splash_screen)
 
     def splash_screen(self):
         # Load the imageß
@@ -139,8 +123,6 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons()
         # Always ensure the time is updating on the main screen
         self.update_time()
-        # Reset idle timer when main screen is shown
-        self.reset_idle_timer()
 
         
     def load_logo(self):
@@ -1693,8 +1675,6 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons()
         # Ensure time is restarted only when the main page is loaded
         self.update_time()
-        # Reset idle timer when main screen is shown
-        self.reset_idle_timer()
     
         self.running = True
         self.person_running = False
