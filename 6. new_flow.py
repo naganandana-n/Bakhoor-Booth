@@ -1682,6 +1682,11 @@ class ThariBakhoorApp(tk.Tk):
     
 
     def show_main_screen_buttons(self):
+        # Destroy any previous option frames if they exist
+        if hasattr(self, 'time_frame'): self.time_frame.destroy()
+        if hasattr(self, 'heat_frame'): self.heat_frame.destroy()
+        if hasattr(self, 'speed_frame'): self.speed_frame.destroy()
+        if hasattr(self, 'button_panel_frame'): self.button_panel_frame.destroy()
         # Destroy the custom screen
         for widget in self.winfo_children():
             widget.destroy()
