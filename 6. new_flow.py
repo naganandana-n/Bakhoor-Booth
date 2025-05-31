@@ -584,7 +584,7 @@ class ThariBakhoorApp(tk.Tk):
             if elapsed >= x:
                 break
             seconds_left = max(0, x - elapsed)
-            self._update_clothes_mode_label(f"Preheating... Heater ON\n{seconds_left}s left")
+            self._update_clothes_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
@@ -604,7 +604,7 @@ class ThariBakhoorApp(tk.Tk):
                 temp = self._get_temp_value()
                 last_temp_check = now
                 if temp >= 150:
-                    self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                    self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
                     # Wait for Y seconds
@@ -629,7 +629,7 @@ class ThariBakhoorApp(tk.Tk):
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
@@ -651,7 +651,7 @@ class ThariBakhoorApp(tk.Tk):
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
@@ -904,7 +904,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Safe Mode",
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
-            padx=10, pady=3
+            padx=20, pady=10
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -932,7 +932,7 @@ class ThariBakhoorApp(tk.Tk):
             if elapsed >= x:
                 break
             seconds_left = max(0, x - elapsed)
-            self._update_surrounding_mode_label(f"Preheating... Heater ON\n{seconds_left}s left")
+            self._update_surrounding_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
@@ -952,7 +952,7 @@ class ThariBakhoorApp(tk.Tk):
                 temp = self._get_temp_value()
                 last_temp_check = now
                 if temp >= 150:
-                    self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                    self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
                     # Wait for Y seconds
@@ -977,7 +977,7 @@ class ThariBakhoorApp(tk.Tk):
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
@@ -999,7 +999,7 @@ class ThariBakhoorApp(tk.Tk):
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C).\nHeater OFF for {y}s.")
+                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
@@ -1040,9 +1040,12 @@ class ThariBakhoorApp(tk.Tk):
         time.sleep(3)
         self.surrounding_mode_frame.after(0, self.show_main_screen_buttons)
 
-    def _update_surrounding_mode_label(self, message):
+    def _surrounding_clothes_mode_label(self, message):
         if hasattr(self, "surrounding_mode_label"):
-            self.surrounding_mode_label.config(text=message)
+            self.surrounding_mode_label.config(
+                text=message,
+                font=("DM Sans", 12)
+            )
     def save_values(self):
         # Notes down the time at when the process starts
         self.saved_time = time.time()
@@ -1125,7 +1128,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Safe Mode",
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
-            padx=10, pady=3
+            padx=20, pady=10
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -1140,7 +1143,7 @@ class ThariBakhoorApp(tk.Tk):
         # 1. Lock the door immediately
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
-        self._update_person_mode_label("Door locked.\nPreheating...")
+        self._update_person_mode_label("Door locked. Preheating...")
 
         # 2. Turn on heater and start X timer (preheat)
         if ENABLE_HARDWARE:
@@ -1158,7 +1161,7 @@ class ThariBakhoorApp(tk.Tk):
             preheat_elapsed = int(now - preheat_start)
             seconds_left = max(0, x - preheat_elapsed)
             if preheat_elapsed < 30:
-                self._update_person_mode_label(f"Preheating... {seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
+                self._update_person_mode_label(f"Preheating... {seconds_left}s left. Door unlocks in {30-preheat_elapsed}s")
                 time.sleep(1)
                 continue
             # Unlock the door at 30s if not already unlocked
@@ -1176,7 +1179,7 @@ class ThariBakhoorApp(tk.Tk):
             # If no entry (weight == 0), pause X timer after 15s
             if not entry_detected:
                 if weight == 0:
-                    self._update_person_mode_label("Waiting for entry...\nPlease enter the chamber.")
+                    self._update_person_mode_label("Waiting for entry. Please enter the chamber.")
                     waited_while_zero += 1
                     if waited_while_zero >= 15:
                         # Pause X timer, turn off heater, display message, wait for entry
@@ -1204,13 +1207,13 @@ class ThariBakhoorApp(tk.Tk):
                     # Not an adult
                     if ENABLE_HARDWARE:
                         self.heater_off(self.pi, self.heater_ssr_pin)
-                    self._update_person_mode_label("Warning: not an adult.\nHeater OFF.")
+                    self._update_person_mode_label("Warning: not an adult. Heater OFF.")
                     time.sleep(5)
                     return
                 elif weight > 50:
                     entry_detected = True
                     # Continue X timer, heater stays ON
-                    self._update_person_mode_label(f"Entry detected.\nContinuing preheat: {seconds_left}s left.")
+                    self._update_person_mode_label(f"Entry detected. Continuing preheat: {seconds_left}s left.")
                     time.sleep(1)
                     continue
             # If already detected, just continue X timer
@@ -1353,7 +1356,7 @@ class ThariBakhoorApp(tk.Tk):
         # Time note when heating element is turned on
         self.wait_frame = tk.Frame(self, bg="#f4e9e1")
         self.wait_frame.pack(pady=0)
-        self.main_label = tk.Label(self.wait_frame, text="Please wait, \nSystem heating up", bg="#f4e9e1", font=("DM Sans", 18, "bold"))
+        self.main_label = tk.Label(self.wait_frame, text="Please wait, System heating up", bg="#f4e9e1", font=("DM Sans", 18, "bold"))
         self.main_label.grid(row=1, columnspan=5, pady=(0, 10))
 
         if ENABLE_HARDWARE:
@@ -1935,7 +1938,10 @@ class ThariBakhoorApp(tk.Tk):
     
     def _update_person_mode_label(self, message):
         if hasattr(self, "person_mode_label"):
-            self.person_mode_label.config(text=message)
+            self.person_mode_label.config(
+                text=message,
+                font=("DM Sans", 12)
+            )
     
     def activate_safe_mode(self):
         # Disable heater
