@@ -335,7 +335,7 @@ class ThariBakhoorApp(tk.Tk):
         self.button_panel_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.button_panel_frame.pack(pady=0)
 
-        # Heat Control Label
+        # Section Headings
         heat_label = tk.Label(self.heat_frame, text="Heat Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
@@ -399,14 +399,19 @@ class ThariBakhoorApp(tk.Tk):
         start_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_clothes_mode_sequence, font=("DM Sans", 12))
         start_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
 
-        # Safe Mode button
+        # Safe Mode button - centered and styled to match other buttons
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
             command=self.activate_safe_mode,
-            font=("DM Sans", 12)
+            font=("DM Sans", 12),
+            padx=10, pady=3
         )
-        safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
+        # Use grid to center the button in the column (column 1 of 3)
+        safe_button.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
+        self.button_panel_frame.grid_columnconfigure(0, weight=1)
+        self.button_panel_frame.grid_columnconfigure(1, weight=1)
+        self.button_panel_frame.grid_columnconfigure(2, weight=1)
 
         # Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
@@ -507,17 +512,20 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.clothes_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.clothes_mode_frame.pack(fill="both", expand=True)
+
+        # Section label for process
         self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.clothes_mode_label.pack(pady=40)
 
-        # Add Safe Mode button (always available)
+        # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
             self.clothes_mode_frame,
             text="Safe Mode",
             command=self.activate_safe_mode,
-            font=("DM Sans", 12)
+            font=("DM Sans", 12),
+            padx=10, pady=3
         )
-        safe_button.pack(pady=10)
+        safe_button.pack(pady=10, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -553,15 +561,15 @@ class ThariBakhoorApp(tk.Tk):
                     weight = 0  # Simulate removal after a moment
                 if weight == 0:
                     break
-                self._update_clothes_mode_label("Waiting for clothes to be removed...\nWeight detected.\nPlease remove all clothes and close door.")
+                self._update_clothes_mode_label("Weight detected. Please remove weight and close the door.")
                 time.sleep(2)
-            self._update_clothes_mode_label("All clothes removed.\nLocking door.")
+            self._update_clothes_mode_label("Weight is 0. Locking the door to begin cycle.")
             if ENABLE_HARDWARE:
                 self.pi.write(self.door_ssr_pin, 1)
             time.sleep(2)
 
         # Now wait for user to add clothes and close the door (weight becomes nonzero)
-        self._update_clothes_mode_label("Please hang clothes and close the door.\nWaiting for clothes to be detected...")
+        self._update_clothes_mode_label("Waiting for weight to be 0 before locking door...")
         while True:
             if ENABLE_HARDWARE:
                 weight = self._get_weight_value()
@@ -699,7 +707,10 @@ class ThariBakhoorApp(tk.Tk):
 
     def _update_clothes_mode_label(self, message):
         if hasattr(self, "clothes_mode_label"):
-            self.clothes_mode_label.config(text=message)
+            self.clothes_mode_label.config(
+                text=message,
+                font=("DM Sans", 12)
+            )
 
 
     def show_surrounding_screen(self):
