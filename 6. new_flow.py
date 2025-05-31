@@ -535,55 +535,36 @@ class ThariBakhoorApp(tk.Tk):
         x = getattr(self, "clothes_x_seconds", 120)
         y = getattr(self, "clothes_y_seconds", 30)
         z = getattr(self, "clothes_speed_duration", 300)
-        # 1. Prompt user to hang clothes and close door
-        self._update_clothes_mode_label("Please hang clothes in the chamber\nand close the door.\n\nPress Safe Mode anytime if needed.")
-        # Lock the door
-        if ENABLE_HARDWARE:
-            self.pi.write(self.door_ssr_pin, 1)
-        time.sleep(2)
 
-        # 2. Check the weight
-        self._update_clothes_mode_label("Checking for clothes weight...\n(Waiting for weight to appear)")
-        if ENABLE_HARDWARE:
-            weight = self._get_weight_value()
+        # 1. After clicking Start, check current weight
+        weight = self._get_weight_value() if ENABLE_HARDWARE else 0
+        if weight == 0:
+            # Chamber is empty, lock the door and start heating cycle
+            self._update_clothes_mode_label("Chamber empty. Locking door and starting cycle.")
+            if ENABLE_HARDWARE:
+                self.pi.write(self.door_ssr_pin, 1)
+            time.sleep(2)
+            # Proceed to heating cycle
         else:
-            weight = 1  # Simulate weight present
-        # If weight is not 0, unlock the door and wait until weight becomes 0
-        if weight != 0:
-            self._update_clothes_mode_label("Detected clothes inside.\nUnlocking door for removal.")
+            # Chamber not empty, unlock and prompt until weight is 0
+            self._update_clothes_mode_label("Weight detected. Please remove any objects and close the door.")
             if ENABLE_HARDWARE:
                 self.pi.write(self.door_ssr_pin, 0)
             time.sleep(2)
+            # Wait for chamber to be empty
+            self._update_clothes_mode_label("Waiting for chamber to be empty...")
             while True:
-                if ENABLE_HARDWARE:
-                    weight = self._get_weight_value()
-                else:
-                    weight = 0  # Simulate removal after a moment
+                weight = self._get_weight_value() if ENABLE_HARDWARE else 0
                 if weight == 0:
                     break
-                self._update_clothes_mode_label("Weight detected. Please remove weight and close the door.")
+                self._update_clothes_mode_label("Weight detected. Please remove any objects and close the door.")
                 time.sleep(2)
-            self._update_clothes_mode_label("Weight is 0. Locking the door to begin cycle.")
+            self._update_clothes_mode_label("Chamber empty. Locking door and starting cycle.")
             if ENABLE_HARDWARE:
                 self.pi.write(self.door_ssr_pin, 1)
             time.sleep(2)
 
-        # Now wait for user to add clothes and close the door (weight becomes nonzero)
-        self._update_clothes_mode_label("Waiting for weight to be 0 before locking door...")
-        while True:
-            if ENABLE_HARDWARE:
-                weight = self._get_weight_value()
-            else:
-                weight = 2  # Simulate clothes added
-            if weight > 0:
-                break
-            time.sleep(2)
-        self._update_clothes_mode_label("Clothes detected. Locking door and starting cycle.")
-        if ENABLE_HARDWARE:
-            self.pi.write(self.door_ssr_pin, 1)
-        time.sleep(2)
-
-        # 3. Start Speed timer and begin heat cycle
+        # 2. Start Speed timer and begin heat cycle
         self.clothes_speed_start_time = time.time()
         self.clothes_speed_end_time = self.clothes_speed_start_time + z
 
@@ -608,7 +589,7 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self._set_fan_pwm(25)
 
-        # 4. Alternate heater ON/OFF every Y seconds, check temp every 5s, for duration of Z (speed) timer
+        # 3. Alternate heater ON/OFF every Y seconds, check temp every 5s, for duration of Z (speed) timer
         last_temp_check = 0
         while time.time() < self.clothes_speed_end_time:
             now = time.time()
@@ -675,7 +656,7 @@ class ThariBakhoorApp(tk.Tk):
         self._update_clothes_mode_label("Heating cycle complete. Heater OFF.")
         time.sleep(1)
 
-        # 5. At end of Speed timer, run fan at 100% for 3 min, then show 5-min cooldown
+        # 4. At end of Speed timer, run fan at 100% for 3 min, then show 5-min cooldown
         self._update_clothes_mode_label("Post-cycle: Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
             self._set_fan_pwm(100)
@@ -685,7 +666,7 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self._set_fan_pwm(0)
         self._update_clothes_mode_label("Cooldown: 5 min safety timer.")
-        # 6. Show 5-minute cooldown screen
+        # 5. Show 5-minute cooldown screen
         for i in range(5*60):
             mins = (5*60 - i) // 60
             secs = (5*60 - i) % 60
