@@ -898,6 +898,16 @@ class ThariBakhoorApp(tk.Tk):
         self.surrounding_mode_label = tk.Label(self.surrounding_mode_frame, text="Starting Surrounding Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.surrounding_mode_label.pack(pady=40)
 
+        # Centered Safe Mode button, styled to match other buttons
+        safe_button = tk.Button(
+            self.surrounding_mode_frame,
+            text="Safe Mode",
+            command=self.activate_safe_mode,
+            font=("DM Sans", 12),
+            padx=10, pady=3
+        )
+        safe_button.pack(pady=10, anchor="center")
+
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
 
@@ -1108,6 +1118,16 @@ class ThariBakhoorApp(tk.Tk):
         self.person_mode_frame.pack(fill="both", expand=True)
         self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.person_mode_label.pack(pady=40)
+
+        # Centered Safe Mode button, styled to match other buttons
+        safe_button = tk.Button(
+            self.person_mode_frame,
+            text="Safe Mode",
+            command=self.activate_safe_mode,
+            font=("DM Sans", 12),
+            padx=10, pady=3
+        )
+        safe_button.pack(pady=10, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
