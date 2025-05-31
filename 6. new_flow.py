@@ -121,9 +121,8 @@ class ThariBakhoorApp(tk.Tk):
         self.load_logo()
         self.load_date_time()
         self.load_buttons()
-        # Schedule updating time every second
+        # Always ensure the time is updating on the main screen
         self.update_time()
-        
 
         
     def load_logo(self):
@@ -146,11 +145,9 @@ class ThariBakhoorApp(tk.Tk):
 
     def update_time(self):
         current_time = datetime.now().strftime("%A, %d %B %Y \n %I:%M:%S %p")
-        self.time_label.config(text=current_time)
-        # Only update if time_label still exists
         if hasattr(self, "time_label") and self.time_label.winfo_exists():
             self.time_label.config(text=current_time)
-            self.after(1000, self.update_time)
+        self.after(1000, self.update_time)
 
     def load_buttons(self):
         # Create a style object
