@@ -1043,7 +1043,7 @@ class ThariBakhoorApp(tk.Tk):
         time.sleep(3)
         self.surrounding_mode_frame.after(0, self.show_main_screen_buttons)
 
-    def _surrounding_clothes_mode_label(self, message):
+    def _update_surrounding_mode_label(self, message):
         if hasattr(self, "surrounding_mode_label"):
             self.surrounding_mode_label.config(
                 text=message,
