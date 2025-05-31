@@ -465,6 +465,13 @@ class ThariBakhoorApp(tk.Tk):
     def start_clothes_mode_sequence(self):
         # Stop any running threads to avoid interference
         self.running = False
+
+        # Remove the heat, speed, time, and button_panel frames before starting clothes mode (like in Person Mode)
+        self.time_frame.destroy()
+        self.heat_frame.destroy()
+        self.speed_frame.destroy()
+        self.button_panel_frame.destroy()
+
         # Assign heat and speed from current selections if available, else defaults
         self.clothes_heat_level = getattr(self, "selected_clothes_heat_level", "Medium")
         self.clothes_speed_value = getattr(self, "selected_clothes_speed_value", 2)
