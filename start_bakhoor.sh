@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Change to project directory
-cd /home/pi/Desktop/Bakhoor-Booth
+cd /home/Arbitrary/Desktop/Bakhoor-Booth
 
 # Activate virtual environment
 source venv/bin/activate
