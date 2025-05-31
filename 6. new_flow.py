@@ -321,118 +321,200 @@ class ThariBakhoorApp(tk.Tk):
         self.running = False
         # Destroy the buttons frame
         self.load_buttons_frame.destroy()
-        # Load frames for Heat, Speed, and Time
-        self.heat_frame = tk.Frame(self, bg="#f4e9e1")
+
+        # Centered frame for clothes mode
+        self.center_frame = tk.Frame(self, bg="#f4e9e1")
+        self.center_frame.pack(expand=True)
+
+        self.heat_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.heat_frame.pack(pady=10)
-        self.speed_frame = tk.Frame(self, bg="#f4e9e1")
+        self.speed_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.speed_frame.pack(pady=10)
-        self.time_frame = tk.Frame(self, bg="#f4e9e1")
+        self.time_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.time_frame.pack(pady=0)
-        self.button_panel_frame = tk.Frame(self, bg="#f4e9e1")
+        self.button_panel_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.button_panel_frame.pack(pady=0)
 
         # Heat Control Label
         heat_label = tk.Label(self.heat_frame, text="Heat Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        heat_label.grid(row=4, columnspan=5, pady=(0, 10))
+        heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        speed_label.grid(row=4, columnspan=5, pady=(0, 10))
+        speed_label.grid(row=0, columnspan=3, pady=(0, 10))
         time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        time_label.grid(row=4, columnspan=5, pady=(0, 10))
+        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
-        # Lengths for each progress bar
-        bar_lengths = [20, 40, 60, 80, 100]
+        # HEAT CONTROL (3 bars: Low, Medium, High)
+        self.clothes_heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
+        self.clothes_heat_buttons = []
+        self.selected_clothes_heat_level = "Medium"  # Default selection
+        for i, (level, label) in enumerate(self.clothes_heat_levels):
+            btn = tk.Button(
+                self.heat_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if level == self.selected_clothes_heat_level else "raised",
+                command=lambda lvl=level: self.select_clothes_heat_level(lvl)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.clothes_heat_buttons.append(btn)
+        # Set initial heat parameters for default
+        self.set_clothes_heat_params_from_level(self.selected_clothes_heat_level)
 
-        # Define predefined values for the number of filled progress bars and time value
-        heat_value = 1
-        speed_value = 2
-        time_value = 3
+        # SPEED CONTROL (3 bars: 1, 2, 3)
+        self.clothes_speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        self.clothes_speed_buttons = []
+        self.selected_clothes_speed_value = 2  # Default selection is 2 (index=1)
+        for i, (level, label) in enumerate(self.clothes_speed_levels):
+            btn = tk.Button(
+                self.speed_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if i == self.selected_clothes_speed_value - 1 else "raised",
+                command=lambda idx=i: self.select_clothes_speed_level(idx)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.clothes_speed_buttons.append(btn)
 
-        # Create and pack progress bars in heat_frame
-        self.heat_progress_bars = []
-        for i, length in enumerate(bar_lengths):
-            progress_bar = ttk.Progressbar(self.heat_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
-            progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
-            self.heat_progress_bars.append(progress_bar)
-            # Configure style for individual progress bars
-            self.heat_frame.style = ttk.Style()
-            self.heat_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-            # Fill progress bars according to heat_value
-            if i < heat_value:
-                progress_bar["value"] = 100
+        # Set initial speed param
+        self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
 
-        # Create and pack progress bars in speed_frame
-        self.speed_progress_bars = []
-        for i, length in enumerate(bar_lengths):
-            progress_bar = ttk.Progressbar(self.speed_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
-            progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
-            self.speed_progress_bars.append(progress_bar)
-            # Configure style for individual progress bars
-            self.speed_frame.style = ttk.Style()
-            self.speed_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-            # Fill progress bars according to speed_value
-            if i < speed_value:
-                progress_bar["value"] = 100
+        # TIME CONTROL (show total time as per heat+speed)
+        self.clothes_time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
+        self.clothes_time_record.grid(row=1, column=1, sticky="w")
+        self.update_clothes_time_record_label()
 
-        hours = int(time_value / 60)
-        minutes = int(time_value % 60)
-        seconds = 0  # Since you are formatting only minutes initially
-        time_text = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
-
-        # Display the formatted time_value in the time_record label
-        self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
-        self.time_record.grid(row=1, column=2, sticky="w")
-
-        # Instruction Label
-        self.instruction_label = tk.Label(
+        # Instructional message
+        instruction_label = tk.Label(
             self.button_panel_frame,
             text="Ensure incense is placed in the chamber",
+            font=("DM Sans", 12),
             bg="#f4e9e1",
-            font=("DM Sans", 12)
+            justify="center"
         )
-        self.instruction_label.grid(row=0, column=1, pady=(10, 0))
+        instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
-        # Create Start button to begin clothes mode sequence
+        # Start button for clothes mode
         start_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_clothes_mode_sequence, font=("DM Sans", 12))
-        start_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Start button on the left
+        start_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
 
         # Safe Mode button
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
-            command=self.activate_safe_mode,  # You can define this function
+            command=self.activate_safe_mode,
             font=("DM Sans", 12)
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
 
-        # Create Close button
+        # Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))
+
+    def select_clothes_heat_level(self, level):
+        self.selected_clothes_heat_level = level
+        for i, (lvl, _) in enumerate(self.clothes_heat_levels):
+            self.clothes_heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+        self.set_clothes_heat_params_from_level(level)
+        self.update_clothes_time_record_label()
+
+    def set_clothes_heat_params_from_level(self, level):
+        # Map heat level to x_seconds, y_seconds, heat_duration
+        if level == "Low":
+            self.clothes_x_seconds = 110
+            self.clothes_y_seconds = 25
+            self.clothes_heat_duration = 120
+        elif level == "Medium":
+            self.clothes_x_seconds = 120
+            self.clothes_y_seconds = 30
+            self.clothes_heat_duration = 130
+        elif level == "High":
+            self.clothes_x_seconds = 130
+            self.clothes_y_seconds = 35
+            self.clothes_heat_duration = 140
+        else:
+            self.clothes_x_seconds = 120
+            self.clothes_y_seconds = 30
+            self.clothes_heat_duration = 130
+
+    def select_clothes_speed_level(self, idx):
+        self.selected_clothes_speed_value = idx + 1
+        for i in range(len(self.clothes_speed_buttons)):
+            self.clothes_speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
+        self.update_clothes_time_record_label()
+
+    def set_clothes_speed_param_from_value(self, value):
+        # value: 1, 2, 3
+        if value == 1:
+            self.clothes_speed_duration = 150
+        elif value == 2:
+            self.clothes_speed_duration = 300
+        elif value == 3:
+            self.clothes_speed_duration = 480
+        else:
+            self.clothes_speed_duration = 300
+
+    def update_clothes_time_record_label(self):
+        total_seconds = getattr(self, "clothes_heat_duration", 130) + getattr(self, "clothes_speed_duration", 300)
+        mins = total_seconds // 60
+        secs = total_seconds % 60
+        self.clothes_time_record.config(text=f"Total: {mins}m {secs:02d}s")
 
     def start_clothes_mode_sequence(self):
         # Stop any running threads to avoid interference
         self.running = False
-        # Setup for clothes mode - assign heat/speed/time values as needed
-        # (For demonstration, using the same values as in show_clothes_screen)
-        self.heat_level = 1
-        self.speed_value = 2
-        self.time_value = 3
-        # Set x_seconds and y_seconds (you may adjust as needed)
-        self.x_seconds = 60  # Example preheat duration (can be parameterized)
-        self.y_seconds = 20  # Example Y cycle duration
-        self.speed_duration = 120  # Example Z total duration (2 min)
+        # Lock the door
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+
+        # Assign heat and speed from current selections if available, else defaults
+        self.clothes_heat_level = getattr(self, "selected_clothes_heat_level", "Medium")
+        self.clothes_speed_value = getattr(self, "selected_clothes_speed_value", 2)
+
+        # Set x_seconds and y_seconds based on clothes heat level
+        if self.clothes_heat_level == "Low":
+            self.clothes_x_seconds = 110
+            self.clothes_y_seconds = 25
+        elif self.clothes_heat_level == "Medium":
+            self.clothes_x_seconds = 120
+            self.clothes_y_seconds = 30
+        elif self.clothes_heat_level == "High":
+            self.clothes_x_seconds = 130
+            self.clothes_y_seconds = 35
+        else:
+            self.clothes_x_seconds = 120
+            self.clothes_y_seconds = 30
+
+        # Set speed_duration based on selection
+        if self.clothes_speed_value == 1:
+            self.clothes_speed_duration = 150
+        elif self.clothes_speed_value == 2:
+            self.clothes_speed_duration = 300
+        elif self.clothes_speed_value == 3:
+            self.clothes_speed_duration = 480
+        else:
+            self.clothes_speed_duration = 300
+
+        # Also update speed_end_time to match selected speed_duration
+        self.clothes_speed_start_time = time.time()
+        self.clothes_speed_end_time = self.clothes_speed_start_time + self.clothes_speed_duration
+
         # Show a new frame for the sequence
         self.clothes_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.clothes_mode_frame.pack(fill="both", expand=True)
         self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.clothes_mode_label.pack(pady=40)
+
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
 
     def _clothes_mode_flow(self):
-        # Implements the full clothes mode flow (no weight checks)
-        x = self.x_seconds
-        y = self.y_seconds
-        z = self.speed_duration
+        # Implements the full clothes mode flow, mirrors surrounding mode logic (no weight checks)
+        x = getattr(self, "clothes_x_seconds", 120)
+        y = getattr(self, "clothes_y_seconds", 30)
+        z = getattr(self, "clothes_speed_duration", 300)
         # 1. Lock the door immediately
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
@@ -443,11 +525,23 @@ class ThariBakhoorApp(tk.Tk):
             self.heater_on(self.pi, self.heater_ssr_pin)
         preheat_start = time.time()
         preheat_elapsed = 0
-        # No entry/weight checks in clothes mode
         while preheat_elapsed < x:
             now = time.time()
             preheat_elapsed = int(now - preheat_start)
             seconds_left = max(0, x - preheat_elapsed)
+            if preheat_elapsed < 30:
+                self._update_clothes_mode_label(f"Preheating...\n{seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
+                time.sleep(1)
+                continue
+            # Unlock the door at 30s if not already unlocked
+            if preheat_elapsed == 30:
+                self._update_clothes_mode_label("Unlocking door. Please enter chamber.")
+                if ENABLE_HARDWARE:
+                    self.pi.write(self.door_ssr_pin, 0)
+                time.sleep(2)
+                # After unlocking door, immediately turn fan ON at 10% PWM
+                if ENABLE_HARDWARE:
+                    self._set_fan_pwm(25)
             self._update_clothes_mode_label(f"Preheating... ({seconds_left}s left)")
             time.sleep(1)
         # End of X timer: heater OFF
@@ -456,7 +550,7 @@ class ThariBakhoorApp(tk.Tk):
         self._update_clothes_mode_label("Preheat complete. Heater OFF.")
         time.sleep(1)
 
-        # 3. Cyclic Y timer: alternate heater ON/OFF every Y seconds for speed_duration
+        # 3. Cyclic Y timer: alternate heater ON/OFF every Y seconds for z duration, with temperature checks
         speed_start_time = time.time()
         speed_end_time = speed_start_time + z
         last_temp_check = 0
