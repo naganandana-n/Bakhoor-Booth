@@ -87,7 +87,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # Only run fan purge if hardware is enabled
         if ENABLE_HARDWARE:
-            GPIO.output(self.fan_gpio_pin, GPIO.HIGH)
+            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
@@ -164,9 +164,6 @@ class ThariBakhoorApp(tk.Tk):
 
         self.surrounding_button = ttk.Button(self.load_buttons_frame, text="Surrounding", command=self.show_surrounding_screen, width=10, padding=5)
         self.surrounding_button.grid(row=0, column=2, padx=10)
-
-        self.Custom_button = ttk.Button(self.load_buttons_frame, text="Custom", command=self.show_custom_screen, width=10, padding=5)
-        self.Custom_button.grid(row=1, column=1, padx=10, pady=20)
 
     def show_person_screen(self):
         # Destroy the buttons frame
@@ -321,11 +318,9 @@ class ThariBakhoorApp(tk.Tk):
 
 
     def show_clothes_screen(self):
-        self.running=False
-
+        self.running = False
         # Destroy the buttons frame
         self.load_buttons_frame.destroy()
-    
         # Load frames for Heat, Speed, and Time
         self.heat_frame = tk.Frame(self, bg="#f4e9e1")
         self.heat_frame.pack(pady=10)
@@ -333,9 +328,9 @@ class ThariBakhoorApp(tk.Tk):
         self.speed_frame.pack(pady=10)
         self.time_frame = tk.Frame(self, bg="#f4e9e1")
         self.time_frame.pack(pady=0)
-        self.button_panel_frame=tk.Frame(self, bg="#f4e9e1")
+        self.button_panel_frame = tk.Frame(self, bg="#f4e9e1")
         self.button_panel_frame.pack(pady=0)
-        
+
         # Heat Control Label
         heat_label = tk.Label(self.heat_frame, text="Heat Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         heat_label.grid(row=4, columnspan=5, pady=(0, 10))
@@ -343,26 +338,24 @@ class ThariBakhoorApp(tk.Tk):
         speed_label.grid(row=4, columnspan=5, pady=(0, 10))
         time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         time_label.grid(row=4, columnspan=5, pady=(0, 10))
-    
+
         # Lengths for each progress bar
         bar_lengths = [20, 40, 60, 80, 100]
-    
+
         # Define predefined values for the number of filled progress bars and time value
         heat_value = 1
         speed_value = 2
         time_value = 3
-    
+
         # Create and pack progress bars in heat_frame
         self.heat_progress_bars = []
         for i, length in enumerate(bar_lengths):
             progress_bar = ttk.Progressbar(self.heat_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
             progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
             self.heat_progress_bars.append(progress_bar)
-    
             # Configure style for individual progress bars
             self.heat_frame.style = ttk.Style()
             self.heat_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-    
             # Fill progress bars according to heat_value
             if i < heat_value:
                 progress_bar["value"] = 100
@@ -373,20 +366,18 @@ class ThariBakhoorApp(tk.Tk):
             progress_bar = ttk.Progressbar(self.speed_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
             progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
             self.speed_progress_bars.append(progress_bar)
-    
             # Configure style for individual progress bars
             self.speed_frame.style = ttk.Style()
             self.speed_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-    
             # Fill progress bars according to speed_value
             if i < speed_value:
                 progress_bar["value"] = 100
-    
+
         hours = int(time_value / 60)
         minutes = int(time_value % 60)
         seconds = 0  # Since you are formatting only minutes initially
         time_text = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
-    
+
         # Display the formatted time_value in the time_record label
         self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
         self.time_record.grid(row=1, column=2, sticky="w")
@@ -400,9 +391,9 @@ class ThariBakhoorApp(tk.Tk):
         )
         self.instruction_label.grid(row=0, column=1, pady=(10, 0))
 
-        # Create Save button to print values
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
-        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
+        # Create Start button to begin clothes mode sequence
+        start_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_clothes_mode_sequence, font=("DM Sans", 12))
+        start_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Start button on the left
 
         # Safe Mode button
         safe_button = tk.Button(
@@ -416,106 +407,522 @@ class ThariBakhoorApp(tk.Tk):
         # Create Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
+
+    def start_clothes_mode_sequence(self):
+        # Stop any running threads to avoid interference
+        self.running = False
+        # Setup for clothes mode - assign heat/speed/time values as needed
+        # (For demonstration, using the same values as in show_clothes_screen)
+        self.heat_level = 1
+        self.speed_value = 2
+        self.time_value = 3
+        # Set x_seconds and y_seconds (you may adjust as needed)
+        self.x_seconds = 60  # Example preheat duration (can be parameterized)
+        self.y_seconds = 20  # Example Y cycle duration
+        self.speed_duration = 120  # Example Z total duration (2 min)
+        # Show a new frame for the sequence
+        self.clothes_mode_frame = tk.Frame(self, bg="#f4e9e1")
+        self.clothes_mode_frame.pack(fill="both", expand=True)
+        self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.clothes_mode_label.pack(pady=40)
+        # Start the controlled flow in a thread to avoid blocking the GUI
+        threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
+
+    def _clothes_mode_flow(self):
+        # Implements the full clothes mode flow (no weight checks)
+        x = self.x_seconds
+        y = self.y_seconds
+        z = self.speed_duration
+        # 1. Lock the door immediately
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+        self._update_clothes_mode_label("Door locked.\nPreheating...")
+
+        # 2. Turn on heater and start X timer (preheat)
+        if ENABLE_HARDWARE:
+            self.heater_on(self.pi, self.heater_ssr_pin)
+        preheat_start = time.time()
+        preheat_elapsed = 0
+        # No entry/weight checks in clothes mode
+        while preheat_elapsed < x:
+            now = time.time()
+            preheat_elapsed = int(now - preheat_start)
+            seconds_left = max(0, x - preheat_elapsed)
+            self._update_clothes_mode_label(f"Preheating... ({seconds_left}s left)")
+            time.sleep(1)
+        # End of X timer: heater OFF
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        self._update_clothes_mode_label("Preheat complete. Heater OFF.")
+        time.sleep(1)
+
+        # 3. Cyclic Y timer: alternate heater ON/OFF every Y seconds for speed_duration
+        speed_start_time = time.time()
+        speed_end_time = speed_start_time + z
+        last_temp_check = 0
+        while time.time() < speed_end_time:
+            now = time.time()
+            # Check temp every 5s
+            if now - last_temp_check >= 5:
+                temp = self._get_temp_value()
+                last_temp_check = now
+                if temp >= 150:
+                    self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    # Wait for Y seconds before continuing
+                    for i in range(y):
+                        if time.time() >= speed_end_time:
+                            break
+                        self._update_clothes_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
+                        time.sleep(1)
+                    continue
+            # Heater OFF Y seconds
+            self._update_clothes_mode_label(f"Heater OFF for {y}s.")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+            for i in range(y):
+                if time.time() >= speed_end_time:
+                    break
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                y_remaining = max(0, y - i)
+                self._update_clothes_mode_label(f"HEATER OFF | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+            if time.time() >= speed_end_time:
+                break
+            # Check temp before ON
+            temp = self._get_temp_value()
+            if temp >= 150:
+                self._update_clothes_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
+                continue
+            # Heater ON Y seconds
+            self._update_clothes_mode_label(f"Heater ON for {y}s.")
+            if ENABLE_HARDWARE:
+                self.heater_on(self.pi, self.heater_ssr_pin)
+            for i in range(y):
+                if time.time() >= speed_end_time:
+                    break
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                y_remaining = max(0, y - i)
+                self._update_clothes_mode_label(f"HEATER ON | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_clothes_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+        # Ensure heater is OFF at the end
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        self._update_clothes_mode_label("Heating cycle complete. Heater OFF.")
+        time.sleep(1)
+
+        # 4. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
+        self._update_clothes_mode_label("Cooling: Fan 10% for 30s...")
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(25)
+        for i in range(30):
+            self._update_clothes_mode_label(f"Cooling: Fan 10% for {30-i}s")
+            time.sleep(1)
+        self._update_clothes_mode_label("Cooling: Fan 100% for 3 min...")
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(100)
+        for i in range(180):
+            self._update_clothes_mode_label(f"Cooling: Fan 100% for {180-i}s")
+            time.sleep(1)
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(0)
+        self._update_clothes_mode_label("Cooling complete. Fan OFF.")
+        time.sleep(1)
+
+        # 5. Show 5-minute timer display (user can see countdown)
+        self._update_clothes_mode_label("Please wait: 5 min timer for safety.")
+        for i in range(5*60):
+            mins = (5*60 - i) // 60
+            secs = (5*60 - i) % 60
+            self._update_clothes_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining")
+            # Also check temp every 5s, turn off heater if >150C
+            if i % 5 == 0:
+                temp = self._get_temp_value()
+                if temp >= 150 and ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+            time.sleep(1)
+        self._update_clothes_mode_label("Session complete. Unlocking door.")
+        # 6. Unlock door
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 0)
+        time.sleep(2)
+        self._update_clothes_mode_label("Done. Door unlocked.")
+        time.sleep(3)
+        self.clothes_mode_frame.after(0, self.show_main_screen_buttons)
+
+    def _update_clothes_mode_label(self, message):
+        if hasattr(self, "clothes_mode_label"):
+            self.clothes_mode_label.config(text=message)
 
 
     def show_surrounding_screen(self):
-        self.running=False
+        self.running = False
         # Destroy the buttons frame
         self.load_buttons_frame.destroy()
-    
-        # Load frames for Heat, Speed, and Time
-        self.heat_frame = tk.Frame(self, bg="#f4e9e1")
+
+        # Centered frame for surrounding mode
+        self.center_frame = tk.Frame(self, bg="#f4e9e1")
+        self.center_frame.pack(expand=True)
+
+        self.heat_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.heat_frame.pack(pady=10)
-        self.speed_frame = tk.Frame(self, bg="#f4e9e1")
+        self.speed_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.speed_frame.pack(pady=10)
-        self.time_frame = tk.Frame(self, bg="#f4e9e1")
+        self.time_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.time_frame.pack(pady=0)
-        self.button_panel_frame=tk.Frame(self, bg="#f4e9e1")
+        self.button_panel_frame = tk.Frame(self.center_frame, bg="#f4e9e1")
         self.button_panel_frame.pack(pady=0)
-        
 
         # Heat Control Label
         heat_label = tk.Label(self.heat_frame, text="Heat Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        heat_label.grid(row=4, columnspan=5, pady=(0, 10))
+        heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        speed_label.grid(row=4, columnspan=5, pady=(0, 10))
+        speed_label.grid(row=0, columnspan=3, pady=(0, 10))
         time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        time_label.grid(row=4, columnspan=5, pady=(0, 10))
-    
-        # Lengths for each progress bar
-        bar_lengths = [20, 40, 60, 80, 100]
-    
-        # Define predefined values for the number of filled progress bars and time value
-        heat_value = 2
-        speed_value = 1
-        time_value = 4
-    
-        # Create and pack progress bars in heat_frame
-        self.heat_progress_bars = []
-        for i, length in enumerate(bar_lengths):
-            progress_bar = ttk.Progressbar(self.heat_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
-            progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
-            self.heat_progress_bars.append(progress_bar)
-    
-            # Configure style for individual progress bars
-            self.heat_frame.style = ttk.Style()
-            self.heat_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-    
-            # Fill progress bars according to heat_value
-            if i < heat_value:
-                progress_bar["value"] = 100
+        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
-        # Create and pack progress bars in speed_frame
-        self.speed_progress_bars = []
-        for i, length in enumerate(bar_lengths):
-            progress_bar = ttk.Progressbar(self.speed_frame, orient=tk.VERTICAL, length=length, mode='determinate', style="Custom.Vertical.TProgressbar")
-            progress_bar.grid(row=1, column=i, padx=5, sticky="s")  # Align bottom using "s"
-            self.speed_progress_bars.append(progress_bar)
-    
-            # Configure style for individual progress bars
-            self.speed_frame.style = ttk.Style()
-            self.speed_frame.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
-    
-            # Fill progress bars according to speed_value
-            if i < speed_value:
-                progress_bar["value"] = 100
-    
-        hours = int(time_value / 60)
-        minutes = int(time_value % 60)
-        seconds = 0  # Since you are formatting only minutes initially
-        time_text = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
- 
-        # Display the formatted time_value in the time_record label
-        self.time_record = tk.Label(self.time_frame, text=time_text, bg="#f4e9e1", font=("DM Sans", 12))
-        self.time_record.grid(row=1, column=2, sticky="w")
+        # HEAT CONTROL (3 bars: Low, Medium, High)
+        self.surrounding_heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
+        self.surrounding_heat_buttons = []
+        self.selected_surrounding_heat_level = "Medium"  # Default selection
+        for i, (level, label) in enumerate(self.surrounding_heat_levels):
+            btn = tk.Button(
+                self.heat_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if level == self.selected_surrounding_heat_level else "raised",
+                command=lambda lvl=level: self.select_surrounding_heat_level(lvl)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.surrounding_heat_buttons.append(btn)
+        # Set initial heat parameters for default
+        self.set_surrounding_heat_params_from_level(self.selected_surrounding_heat_level)
 
-        # Instruction Label
-        self.instruction_label = tk.Label(
+        # SPEED CONTROL (3 bars: 1, 2, 3)
+        self.surrounding_speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        self.surrounding_speed_buttons = []
+        self.selected_surrounding_speed_value = 2  # Default selection is 2 (index=1)
+        for i, (level, label) in enumerate(self.surrounding_speed_levels):
+            btn = tk.Button(
+                self.speed_frame,
+                text=f"{level}\n{label}",
+                font=("DM Sans", 12),
+                width=10,
+                relief="sunken" if i == self.selected_surrounding_speed_value - 1 else "raised",
+                command=lambda idx=i: self.select_surrounding_speed_level(idx)
+            )
+            btn.grid(row=1, column=i, padx=10, pady=5)
+            self.surrounding_speed_buttons.append(btn)
+
+        # Set initial speed param
+        self.set_surrounding_speed_param_from_value(self.selected_surrounding_speed_value)
+
+        # TIME CONTROL (show total time as per heat+speed)
+        # We'll update this label after both selections
+        self.surrounding_time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
+        self.surrounding_time_record.grid(row=1, column=1, sticky="w")
+        self.update_surrounding_time_record_label()
+
+        # Instructional message
+        instruction_label = tk.Label(
             self.button_panel_frame,
             text="Ensure incense is placed in the chamber",
+            font=("DM Sans", 12),
             bg="#f4e9e1",
-            font=("DM Sans", 12)
+            justify="center"
         )
-        self.instruction_label.grid(row=0, column=1, pady=(10, 0))
+        instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
-        # Create Save button to print values
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12))
-        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
+        # Start button for surrounding mode
+        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_surrounding_mode_sequence, font=("DM Sans", 12))
+        save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
 
         # Safe Mode button
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
-            command=self.activate_safe_mode,  # You can define this function
+            command=self.activate_safe_mode,
             font=("DM Sans", 12)
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
 
-
-        # Create Close button
+        # Close button
         close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12))
-        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
-        
+        close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))
+
+    def select_surrounding_heat_level(self, level):
+        self.selected_surrounding_heat_level = level
+        for i, (lvl, _) in enumerate(self.surrounding_heat_levels):
+            self.surrounding_heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+        self.set_surrounding_heat_params_from_level(level)
+        self.update_surrounding_time_record_label()
+
+    def set_surrounding_heat_params_from_level(self, level):
+        if level == "Low":
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 25
+            self.surrounding_heat_duration = 120
+        elif level == "Medium":
+            self.surrounding_x_seconds = 120
+            self.surrounding_y_seconds = 30
+            self.surrounding_heat_duration = 130
+        elif level == "High":
+            self.surrounding_x_seconds = 130
+            self.surrounding_y_seconds = 35
+            self.surrounding_heat_duration = 140
+        else:
+            self.surrounding_x_seconds = 120
+            self.surrounding_y_seconds = 30
+            self.surrounding_heat_duration = 130
+
+    def select_surrounding_speed_level(self, idx):
+        self.selected_surrounding_speed_value = idx + 1
+        for i in range(len(self.surrounding_speed_buttons)):
+            self.surrounding_speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        self.set_surrounding_speed_param_from_value(self.selected_surrounding_speed_value)
+        self.update_surrounding_time_record_label()
+
+    def set_surrounding_speed_param_from_value(self, value):
+        if value == 1:
+            self.surrounding_speed_duration = 150
+        elif value == 2:
+            self.surrounding_speed_duration = 300
+        elif value == 3:
+            self.surrounding_speed_duration = 480
+        else:
+            self.surrounding_speed_duration = 300
+
+    def update_surrounding_time_record_label(self):
+        total_seconds = getattr(self, "surrounding_heat_duration", 130) + getattr(self, "surrounding_speed_duration", 300)
+        mins = total_seconds // 60
+        secs = total_seconds % 60
+        self.surrounding_time_record.config(text=f"Total: {mins}m {secs:02d}s")
+
+    def start_surrounding_mode_sequence(self):
+        # Stop any running threads to avoid interference
+        self.running = False
+        # Lock the door
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+
+        # Start speed timer immediately after door locks (before preheat X starts)
+        self.surrounding_speed_start_time = time.time()
+        self.surrounding_speed_end_time = self.surrounding_speed_start_time + getattr(self, "surrounding_speed_duration", 300)
+
+        # Assign heat and speed from current selections
+        self.surrounding_heat_level = getattr(self, "selected_surrounding_heat_level", "Medium")
+        self.surrounding_speed_value = getattr(self, "selected_surrounding_speed_value", 2)
+
+        # Set x_seconds and y_seconds based on surrounding heat level
+        if self.surrounding_heat_level == "Low":
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 25
+        elif self.surrounding_heat_level == "Medium":
+            self.surrounding_x_seconds = 120
+            self.surrounding_y_seconds = 30
+        elif self.surrounding_heat_level == "High":
+            self.surrounding_x_seconds = 130
+            self.surrounding_y_seconds = 35
+        else:
+            self.surrounding_x_seconds = 120
+            self.surrounding_y_seconds = 30
+
+        # Set speed_duration based on selection
+        if self.surrounding_speed_value == 1:
+            self.surrounding_speed_duration = int(2.5 * 60)
+        elif self.surrounding_speed_value == 2:
+            self.surrounding_speed_duration = 5 * 60
+        elif self.surrounding_speed_value == 3:
+            self.surrounding_speed_duration = 8 * 60
+        else:
+            self.surrounding_speed_duration = 5 * 60
+
+        # Also update speed_end_time to match selected speed_duration
+        self.surrounding_speed_start_time = time.time()
+        self.surrounding_speed_end_time = self.surrounding_speed_start_time + self.surrounding_speed_duration
+
+        # Show a new frame for the sequence
+        self.surrounding_mode_frame = tk.Frame(self, bg="#f4e9e1")
+        self.surrounding_mode_frame.pack(fill="both", expand=True)
+        self.surrounding_mode_label = tk.Label(self.surrounding_mode_frame, text="Starting Surrounding Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.surrounding_mode_label.pack(pady=40)
+
+        # Start the controlled flow in a thread to avoid blocking the GUI
+        threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
+
+    def _surrounding_mode_flow(self):
+        # Implements the full surrounding mode flow, similar to person mode but without weight checks
+        x = self.surrounding_x_seconds
+        y = self.surrounding_y_seconds
+        z = self.surrounding_speed_duration
+        # 1. Lock the door immediately
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 1)
+        self._update_surrounding_mode_label("Door locked.\nPreheating...")
+
+        # 2. Turn on heater and start X timer (preheat)
+        if ENABLE_HARDWARE:
+            self.heater_on(self.pi, self.heater_ssr_pin)
+        preheat_start = time.time()
+        preheat_elapsed = 0
+        # No entry/weight checks in surrounding mode
+        while preheat_elapsed < x:
+            now = time.time()
+            preheat_elapsed = int(now - preheat_start)
+            seconds_left = max(0, x - preheat_elapsed)
+            if preheat_elapsed < 30:
+                self._update_surrounding_mode_label(f"Preheating...\n{seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
+                time.sleep(1)
+                continue
+            # Unlock the door at 30s if not already unlocked
+            if preheat_elapsed == 30:
+                self._update_surrounding_mode_label("Unlocking door. Please enter chamber.")
+                if ENABLE_HARDWARE:
+                    self.pi.write(self.door_ssr_pin, 0)
+                time.sleep(2)
+                # After unlocking door, immediately turn fan ON at 10% PWM
+                if ENABLE_HARDWARE:
+                    self._set_fan_pwm(25)
+            self._update_surrounding_mode_label(f"Preheating... ({seconds_left}s left)")
+            time.sleep(1)
+        # End of X timer: heater OFF
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        self._update_surrounding_mode_label("Preheat complete. Heater OFF.")
+        time.sleep(1)
+
+        # 3. Cyclic Y timer: alternate heater ON/OFF every Y seconds for z duration, with temperature checks
+        speed_start_time = time.time()
+        speed_end_time = speed_start_time + z
+        last_temp_check = 0
+        while time.time() < speed_end_time:
+            now = time.time()
+            # Check temp every 5s
+            if now - last_temp_check >= 5:
+                temp = self._get_temp_value()
+                last_temp_check = now
+                if temp >= 150:
+                    self._update_surrounding_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                    if ENABLE_HARDWARE:
+                        self.heater_off(self.pi, self.heater_ssr_pin)
+                    # Wait for Y seconds before continuing
+                    for i in range(y):
+                        if time.time() >= speed_end_time:
+                            break
+                        self._update_surrounding_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
+                        time.sleep(1)
+                    continue
+            # Heater OFF Y seconds
+            self._update_surrounding_mode_label(f"Heater OFF for {y}s.")
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+            for i in range(y):
+                if time.time() >= speed_end_time:
+                    break
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                y_remaining = max(0, y - i)
+                self._update_surrounding_mode_label(f"HEATER OFF | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_surrounding_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+            if time.time() >= speed_end_time:
+                break
+            # Check temp before ON
+            temp = self._get_temp_value()
+            if temp >= 150:
+                self._update_surrounding_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
+                continue
+            # Heater ON Y seconds
+            self._update_surrounding_mode_label(f"Heater ON for {y}s.")
+            if ENABLE_HARDWARE:
+                self.heater_on(self.pi, self.heater_ssr_pin)
+            for i in range(y):
+                if time.time() >= speed_end_time:
+                    break
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                y_remaining = max(0, y - i)
+                self._update_surrounding_mode_label(f"HEATER ON | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_surrounding_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        if ENABLE_HARDWARE:
+                            self.heater_off(self.pi, self.heater_ssr_pin)
+                        break
+                time.sleep(1)
+        # Ensure heater is OFF at the end
+        if ENABLE_HARDWARE:
+            self.heater_off(self.pi, self.heater_ssr_pin)
+        self._update_surrounding_mode_label("Heating cycle complete. Heater OFF.")
+        time.sleep(1)
+
+        # 4. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
+        self._update_surrounding_mode_label("Cooling: Fan 10% for 30s...")
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(25)
+        for i in range(30):
+            self._update_surrounding_mode_label(f"Cooling: Fan 10% for {30-i}s")
+            time.sleep(1)
+        self._update_surrounding_mode_label("Cooling: Fan 100% for 3 min...")
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(100)
+        for i in range(180):
+            self._update_surrounding_mode_label(f"Cooling: Fan 100% for {180-i}s")
+            time.sleep(1)
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(0)
+        self._update_surrounding_mode_label("Cooling complete. Fan OFF.")
+        time.sleep(1)
+
+        # 5. Show 5-minute timer display (user can see countdown)
+        self._update_surrounding_mode_label("Please wait: 5 min timer for safety.")
+        for i in range(5*60):
+            mins = (5*60 - i) // 60
+            secs = (5*60 - i) % 60
+            self._update_surrounding_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining")
+            # Also check temp every 5s, turn off heater if >150C
+            if i % 5 == 0:
+                temp = self._get_temp_value()
+                if temp >= 150 and ENABLE_HARDWARE:
+                    self.heater_off(self.pi, self.heater_ssr_pin)
+            time.sleep(1)
+        self._update_surrounding_mode_label("Session complete. Unlocking door.")
+        # 6. Unlock door
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 0)
+        time.sleep(2)
+        self._update_surrounding_mode_label("Done. Door unlocked.")
+        time.sleep(3)
+        self.surrounding_mode_frame.after(0, self.show_main_screen_buttons)
+
+    def _update_surrounding_mode_label(self, message):
+        if hasattr(self, "surrounding_mode_label"):
+            self.surrounding_mode_label.config(text=message)
     def save_values(self):
         # Notes down the time at when the process starts
         self.saved_time = time.time()
