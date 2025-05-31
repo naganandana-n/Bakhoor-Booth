@@ -26,7 +26,7 @@ class ThariBakhoorApp(tk.Tk):
             if not self.pi.connected:
                 self.destroy()
 
-            self.heater_ssr_pin = 4 
+            self.heater_ssr_pin = 5 #4
             self.door_ssr_pin = 17
             self.pi.set_mode(self.heater_ssr_pin, pigpio.OUTPUT)
             self.pi.set_mode(self.door_ssr_pin, pigpio.OUTPUT)
@@ -60,28 +60,9 @@ class ThariBakhoorApp(tk.Tk):
         # Configure the custom style
         self.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
         self.running = True
-        self.idle_timer = None
         self.person_running = False
         self.targettemp = [40, 120]
         # Splash screen
-        self.splash_screen()
-    def reset_idle_timer(self):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-        self.idle_timer = self.after(60000, self.return_to_splash_screen)
-
-    def return_to_splash_screen(self):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-            self.idle_timer = None
-
-        self.running = False
-        self.person_running = False
-
-        # Destroy all frames/widgets
-        for widget in self.winfo_children():
-            widget.destroy()
-
         self.splash_screen()
 
     def splash_screen(self):
@@ -110,28 +91,15 @@ class ThariBakhoorApp(tk.Tk):
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
-        # self.after(120000, self.on_splash_click, None)  # fallback auto-continue
+        self.after(120000, self.on_splash_click, None)  # fallback auto-continue
 
     def on_splash_click(self, event):
-        # Clear idle timer if active
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-            self.idle_timer = None
-
-        # Stop any threads or flows
-        self.running = False
-        self.person_running = False
-
-        # Destroy all frames/widgets
-        for widget in self.winfo_children():
-            widget.destroy()
-
-        # Lock the door for safety (if hardware enabled)
+        # Lock the door for safety at splash click (before main menu)
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
-
-        # Load main screen
         self.unbind("<Button-1>")
+        self.logo_label.destroy()
+        self.touch_label.destroy()
         self.load_main_screen()
 
     def load_main_screen(self):
@@ -155,8 +123,6 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons()
         # Always ensure the time is updating on the main screen
         self.update_time()
-        self.bind_all("<Button>", lambda event: self.reset_idle_timer())
-        self.reset_idle_timer()
 
         
     def load_logo(self):
@@ -507,9 +473,6 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_time_record.config(text=f"Total: {mins}m {secs:02d}s")
 
     def start_clothes_mode_sequence(self):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
 
@@ -885,9 +848,6 @@ class ThariBakhoorApp(tk.Tk):
         self.surrounding_time_record.config(text=f"Total: {mins}m {secs:02d}s")
 
     def start_surrounding_mode_sequence(self):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
         # Destroy the options page frames
@@ -1114,9 +1074,6 @@ class ThariBakhoorApp(tk.Tk):
         self.start_person_mode_sequence()
 
     def start_person_mode_sequence(self):
-        if self.idle_timer:
-            self.after_cancel(self.idle_timer)
-            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
         self.person_running = False 
@@ -1704,11 +1661,6 @@ class ThariBakhoorApp(tk.Tk):
     
 
     def show_main_screen_buttons(self):
-        # Destroy any previous option frames if they exist
-        if hasattr(self, 'time_frame'): self.time_frame.destroy()
-        if hasattr(self, 'heat_frame'): self.heat_frame.destroy()
-        if hasattr(self, 'speed_frame'): self.speed_frame.destroy()
-        if hasattr(self, 'button_panel_frame'): self.button_panel_frame.destroy()
         # Destroy the custom screen
         for widget in self.winfo_children():
             widget.destroy()
