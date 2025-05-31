@@ -68,7 +68,7 @@ class ThariBakhoorApp(tk.Tk):
     def reset_idle_timer(self):
         if self.idle_timer:
             self.after_cancel(self.idle_timer)
-        self.idle_timer = self.after(120000, self.return_to_splash_screen)
+        self.idle_timer = self.after(60000, self.return_to_splash_screen)
 
     def return_to_splash_screen(self):
         for widget in self.winfo_children():
