@@ -1119,13 +1119,13 @@ class ThariBakhoorApp(tk.Tk):
         self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.person_mode_label.pack(pady=40)
 
-        # Centered Safe Mode button, styled to match other buttons
+        # Centered Safe Mode button, styled to match clothes mode button
         safe_button = tk.Button(
             self.person_mode_frame,
             text="Safe Mode",
             command=self.activate_safe_mode,
-            font=("DM Sans", 12),
-            padx=10, pady=3
+            font=("DM Sans", 18),
+            padx=20, pady=10
         )
         safe_button.pack(pady=10, anchor="center")
 
