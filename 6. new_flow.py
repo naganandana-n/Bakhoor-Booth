@@ -528,8 +528,8 @@ class ThariBakhoorApp(tk.Tk):
             self.clothes_mode_frame,
             text="Safe Mode",
             command=self.activate_safe_mode,
-            font=("DM Sans", 12),
-            padx=10, pady=3
+            font=("DM Sans", 18),
+            padx=20, pady=10
         )
         safe_button.pack(pady=10, anchor="center")
 
