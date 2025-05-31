@@ -60,9 +60,19 @@ class ThariBakhoorApp(tk.Tk):
         # Configure the custom style
         self.style.configure("Custom.Vertical.TProgressbar", background="#8B5742")
         self.running = True
+        self.idle_timer = None
         self.person_running = False
         self.targettemp = [40, 120]
         # Splash screen
+        self.splash_screen()
+    def reset_idle_timer(self):
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+        self.idle_timer = self.after(120000, self.return_to_splash_screen)
+
+    def return_to_splash_screen(self):
+        for widget in self.winfo_children():
+            widget.destroy()
         self.splash_screen()
 
     def splash_screen(self):
@@ -123,6 +133,8 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons()
         # Always ensure the time is updating on the main screen
         self.update_time()
+        self.bind_all("<Button>", lambda event: self.reset_idle_timer())
+        self.reset_idle_timer()
 
         
     def load_logo(self):
@@ -473,6 +485,9 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_time_record.config(text=f"Total: {mins}m {secs:02d}s")
 
     def start_clothes_mode_sequence(self):
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
 
@@ -848,6 +863,9 @@ class ThariBakhoorApp(tk.Tk):
         self.surrounding_time_record.config(text=f"Total: {mins}m {secs:02d}s")
 
     def start_surrounding_mode_sequence(self):
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
         # Destroy the options page frames
@@ -1074,6 +1092,9 @@ class ThariBakhoorApp(tk.Tk):
         self.start_person_mode_sequence()
 
     def start_person_mode_sequence(self):
+        if self.idle_timer:
+            self.after_cancel(self.idle_timer)
+            self.idle_timer = None
         # Stop any running threads to avoid interference
         self.running = False
         self.person_running = False 
