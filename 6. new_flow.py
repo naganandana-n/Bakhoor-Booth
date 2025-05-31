@@ -1124,8 +1124,8 @@ class ThariBakhoorApp(tk.Tk):
             self.person_mode_frame,
             text="Safe Mode",
             command=self.activate_safe_mode,
-            font=("DM Sans", 18),
-            padx=20, pady=10
+            font=("DM Sans", 12),
+            padx=10, pady=3
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -1158,7 +1158,7 @@ class ThariBakhoorApp(tk.Tk):
             preheat_elapsed = int(now - preheat_start)
             seconds_left = max(0, x - preheat_elapsed)
             if preheat_elapsed < 30:
-                self._update_person_mode_label(f"Preheating...\n{seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
+                self._update_person_mode_label(f"Preheating... {seconds_left}s left\nDoor unlocks in {30-preheat_elapsed}s")
                 time.sleep(1)
                 continue
             # Unlock the door at 30s if not already unlocked
