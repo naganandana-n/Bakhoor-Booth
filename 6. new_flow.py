@@ -144,6 +144,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time()
 
     def update_time(self):
+        if not hasattr(self, "main_frame") or not self.main_frame.winfo_exists():
+            return  # Stop updating if main_frame doesn't exist
         current_time = datetime.now().strftime("%A, %d %B %Y \n %I:%M:%S %p")
         if hasattr(self, "time_label") and self.time_label.winfo_exists():
             self.time_label.config(text=current_time)
