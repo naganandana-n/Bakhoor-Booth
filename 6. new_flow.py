@@ -482,6 +482,10 @@ class ThariBakhoorApp(tk.Tk):
         self.speed_frame.destroy()
         self.button_panel_frame.destroy()
 
+        # Unlock the door at the start of the sequence so user can place clothes inside
+        if ENABLE_HARDWARE:
+            self.pi.write(self.door_ssr_pin, 0)
+
         # Assign heat and speed from current selections if available, else defaults
         self.clothes_heat_level = getattr(self, "selected_clothes_heat_level", "Medium")
         self.clothes_speed_value = getattr(self, "selected_clothes_speed_value", 2)
