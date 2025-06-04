@@ -161,13 +161,44 @@ class ThariBakhoorApp(tk.Tk):
         self.load_buttons_frame = tk.Frame(self.main_frame, bg="#f4e9e1")  # Store the buttons frame as an instance variable
         self.load_buttons_frame.pack(pady=20)
 
-        self.person_button = ttk.Button(self.load_buttons_frame, text="Person", command=self.show_person_screen, width=10, padding=5)
+        # Use tk.Button with consistent styling for mode selection buttons
+        self.person_button = tk.Button(
+            self.load_buttons_frame,
+            text="Person",
+            command=self.show_person_screen,
+            width=10,
+            font=("DM Sans", 14),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         self.person_button.grid(row=0, column=0, padx=10)
 
-        self.clothes_button = ttk.Button(self.load_buttons_frame, text="Clothes", command=self.show_clothes_screen, width=10, padding=5)
+        self.clothes_button = tk.Button(
+            self.load_buttons_frame,
+            text="Clothes",
+            command=self.show_clothes_screen,
+            width=10,
+            font=("DM Sans", 14),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         self.clothes_button.grid(row=0, column=1, padx=10)
 
-        self.surrounding_button = ttk.Button(self.load_buttons_frame, text="Surrounding", command=self.show_surrounding_screen, width=10, padding=5)
+        self.surrounding_button = tk.Button(
+            self.load_buttons_frame,
+            text="Surrounding",
+            command=self.show_surrounding_screen,
+            width=10,
+            font=("DM Sans", 14),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         self.surrounding_button.grid(row=0, column=2, padx=10)
 
     def show_person_screen(self):
@@ -212,7 +243,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if level == self.selected_heat_level else "raised",
                 command=lambda lvl=level: self.select_heat_level(lvl),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.heat_buttons.append(btn)
@@ -232,7 +265,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if i == self.selected_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_speed_level(idx),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.speed_buttons.append(btn)
@@ -258,7 +293,16 @@ class ThariBakhoorApp(tk.Tk):
         instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
         # Create Save button to print values
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        save_button = tk.Button(
+            self.button_panel_frame,
+            text="Start",
+            command=self.save_values,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
 
         # Safe Mode button
@@ -268,12 +312,23 @@ class ThariBakhoorApp(tk.Tk):
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
 
         # Create Close button
-        close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        close_button = tk.Button(
+            self.button_panel_frame,
+            text="Close",
+            command=self.show_main_screen_buttons,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
     def select_heat_level(self, level):
@@ -367,7 +422,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if level == self.selected_clothes_heat_level else "raised",
                 command=lambda lvl=level: self.select_clothes_heat_level(lvl),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.clothes_heat_buttons.append(btn)
@@ -387,7 +444,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if i == self.selected_clothes_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_clothes_speed_level(idx),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.clothes_speed_buttons.append(btn)
@@ -411,7 +470,16 @@ class ThariBakhoorApp(tk.Tk):
         instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
         # Start button for clothes mode
-        start_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_clothes_mode_sequence, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        start_button = tk.Button(
+            self.button_panel_frame,
+            text="Start",
+            command=self.start_clothes_mode_sequence,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         start_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
 
         # Safe Mode button - centered and styled to match other buttons
@@ -422,7 +490,9 @@ class ThariBakhoorApp(tk.Tk):
             font=("DM Sans", 12),
             padx=10, pady=3,
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         # Use grid to center the button in the column (column 1 of 3)
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
@@ -431,7 +501,16 @@ class ThariBakhoorApp(tk.Tk):
         self.button_panel_frame.grid_columnconfigure(2, weight=1)
 
         # Close button
-        close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        close_button = tk.Button(
+            self.button_panel_frame,
+            text="Close",
+            command=self.show_main_screen_buttons,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))
 
     def select_clothes_heat_level(self, level):
@@ -546,7 +625,9 @@ class ThariBakhoorApp(tk.Tk):
             font=("DM Sans", 18),
             padx=20, pady=10,
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -756,7 +837,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if level == self.selected_surrounding_heat_level else "raised",
                 command=lambda lvl=level: self.select_surrounding_heat_level(lvl),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.surrounding_heat_buttons.append(btn)
@@ -776,7 +859,9 @@ class ThariBakhoorApp(tk.Tk):
                 relief="sunken" if i == self.selected_surrounding_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_surrounding_speed_level(idx),
                 bg="#3d2d22",
-                fg="#f4e9e1"
+                fg="#f4e9e1",
+                activebackground="#3d2d22",
+                activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.surrounding_speed_buttons.append(btn)
@@ -801,7 +886,16 @@ class ThariBakhoorApp(tk.Tk):
         instruction_label.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
         # Start button for surrounding mode
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.start_surrounding_mode_sequence, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        save_button = tk.Button(
+            self.button_panel_frame,
+            text="Start",
+            command=self.start_surrounding_mode_sequence,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
 
         # Safe Mode button
@@ -811,12 +905,23 @@ class ThariBakhoorApp(tk.Tk):
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
 
         # Close button
-        close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        close_button = tk.Button(
+            self.button_panel_frame,
+            text="Close",
+            command=self.show_main_screen_buttons,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))
 
     def select_surrounding_heat_level(self, level):
@@ -940,7 +1045,9 @@ class ThariBakhoorApp(tk.Tk):
             font=("DM Sans", 12),
             padx=20, pady=10,
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -1157,7 +1264,9 @@ class ThariBakhoorApp(tk.Tk):
             font=("DM Sans", 12),
             padx=20, pady=10,
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.pack(pady=10, anchor="center")
 
@@ -1609,16 +1718,28 @@ class ThariBakhoorApp(tk.Tk):
         self.time_record.grid(row=1, column=2, sticky="w")
 
         # Create buttons with custom appearance and functionality
-        time_clear = tk.Button(self.time_frame, text="Clear", command=self.clear_time, font=("DM Sans", 12), width=10, bg="#3d2d22", fg="#f4e9e1")
+        time_clear = tk.Button(
+            self.time_frame, text="Clear", command=self.clear_time, font=("DM Sans", 12), width=10,
+            bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1"
+        )
         time_clear.grid(row=2, column=0, padx=10, pady=5)
 
-        time_1_ = tk.Button(self.time_frame, text="+1", command=lambda: self.add_time(1), font=("DM Sans", 12), width=8, bg="#3d2d22", fg="#f4e9e1")
+        time_1_ = tk.Button(
+            self.time_frame, text="+1", command=lambda: self.add_time(1), font=("DM Sans", 12), width=8,
+            bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1"
+        )
         time_1_.grid(row=2, column=1, padx=10, pady=5)
 
-        time_5_ = tk.Button(self.time_frame, text="+5", command=lambda: self.add_time(5), font=("DM Sans", 12), width=8, bg="#3d2d22", fg="#f4e9e1")
+        time_5_ = tk.Button(
+            self.time_frame, text="+5", command=lambda: self.add_time(5), font=("DM Sans", 12), width=8,
+            bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1"
+        )
         time_5_.grid(row=2, column=2, padx=10, pady=5)
 
-        time_10_ = tk.Button(self.time_frame, text="+10", command=lambda: self.add_time(10), font=("DM Sans", 12), width=8, bg="#3d2d22", fg="#f4e9e1")
+        time_10_ = tk.Button(
+            self.time_frame, text="+10", command=lambda: self.add_time(10), font=("DM Sans", 12), width=8,
+            bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1"
+        )
         time_10_.grid(row=2, column=3, padx=10, pady=5)
 
         # Instruction Label
@@ -1631,7 +1752,16 @@ class ThariBakhoorApp(tk.Tk):
         self.instruction_label.grid(row=0, column=1, pady=(10, 0))
 
         # Create Save button to print values
-        save_button = tk.Button(self.button_panel_frame, text="Start", command=self.save_values if ENABLE_HARDWARE else self.custom_save_values, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        save_button = tk.Button(
+            self.button_panel_frame,
+            text="Start",
+            command=self.save_values if ENABLE_HARDWARE else self.custom_save_values,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))  # Place the Save button on the left
 
         # Safe Mode button
@@ -1641,12 +1771,23 @@ class ThariBakhoorApp(tk.Tk):
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
             bg="#3d2d22",
-            fg="#f4e9e1"
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
 
         # Create Close button
-        close_button = tk.Button(self.button_panel_frame, text="Close", command=self.show_main_screen_buttons, font=("DM Sans", 12), bg="#3d2d22", fg="#f4e9e1")
+        close_button = tk.Button(
+            self.button_panel_frame,
+            text="Close",
+            command=self.show_main_screen_buttons,
+            font=("DM Sans", 12),
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#3d2d22",
+            activeforeground="#f4e9e1"
+        )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
 
 
@@ -2022,3 +2163,6 @@ class ThariBakhoorApp(tk.Tk):
 if __name__ == "__main__":
     app = ThariBakhoorApp()
     app.mainloop()
+    # SAFE MODE PAGE BUTTONS: ensure styling for Exit/Back buttons in safe mode
+    # If you have a method like show_safe_mode_screen or similar, ensure buttons are styled as follows:
+    # tk.Button(..., bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1")
