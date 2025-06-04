@@ -747,10 +747,10 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial heat parameters for default
         self.set_surrounding_heat_params_from_level(self.selected_surrounding_heat_level)
 
-        # SPEED CONTROL (3 bars: 1, 2, 3)
-        self.surrounding_speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        # SPEED CONTROL (3 bars: 3 min, 4 min, 5 min)
+        self.surrounding_speed_levels = [("3 minutes", "180s"), ("4 minutes", "240s"), ("5 minutes", "300s")]
         self.surrounding_speed_buttons = []
-        self.selected_surrounding_speed_value = 2  # Default selection is 2 (index=1)
+        self.selected_surrounding_speed_value = 1  # Default selection is 3 minutes (index=0)
         for i, (level, label) in enumerate(self.surrounding_speed_levels):
             btn = tk.Button(
                 self.speed_frame,
@@ -808,20 +808,20 @@ class ThariBakhoorApp(tk.Tk):
 
     def set_surrounding_heat_params_from_level(self, level):
         if level == "Low":
-            self.surrounding_x_seconds = 110
-            self.surrounding_y_seconds = 25
+            self.surrounding_x_seconds = 105
+            self.surrounding_y_seconds = 10
             self.surrounding_heat_duration = 120
         elif level == "Medium":
-            self.surrounding_x_seconds = 120
-            self.surrounding_y_seconds = 30
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 15
             self.surrounding_heat_duration = 130
         elif level == "High":
-            self.surrounding_x_seconds = 130
-            self.surrounding_y_seconds = 35
+            self.surrounding_x_seconds = 115
+            self.surrounding_y_seconds = 20
             self.surrounding_heat_duration = 140
         else:
-            self.surrounding_x_seconds = 120
-            self.surrounding_y_seconds = 30
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 15
             self.surrounding_heat_duration = 130
 
     def select_surrounding_speed_level(self, idx):
@@ -832,14 +832,20 @@ class ThariBakhoorApp(tk.Tk):
         self.update_surrounding_time_record_label()
 
     def set_surrounding_speed_param_from_value(self, value):
+        # value: 1, 2, 3 (index+1)
+        # Map to 3, 4, 5 minutes
         if value == 1:
-            self.surrounding_speed_duration = 150
+            self.surrounding_speed_duration = 180
+            self.surrounding_off_cycle = 25
         elif value == 2:
-            self.surrounding_speed_duration = 300
+            self.surrounding_speed_duration = 240
+            self.surrounding_off_cycle = 33
         elif value == 3:
-            self.surrounding_speed_duration = 480
-        else:
             self.surrounding_speed_duration = 300
+            self.surrounding_off_cycle = 41
+        else:
+            self.surrounding_speed_duration = 180
+            self.surrounding_off_cycle = 25
 
     def update_surrounding_time_record_label(self):
         total_seconds = getattr(self, "surrounding_heat_duration", 130) + getattr(self, "surrounding_speed_duration", 300)
@@ -869,28 +875,33 @@ class ThariBakhoorApp(tk.Tk):
 
         # Set x_seconds and y_seconds based on surrounding heat level
         if self.surrounding_heat_level == "Low":
-            self.surrounding_x_seconds = 110
-            self.surrounding_y_seconds = 25
+            self.surrounding_x_seconds = 105
+            self.surrounding_y_seconds = 10
         elif self.surrounding_heat_level == "Medium":
-            self.surrounding_x_seconds = 120
-            self.surrounding_y_seconds = 30
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 15
         elif self.surrounding_heat_level == "High":
-            self.surrounding_x_seconds = 130
-            self.surrounding_y_seconds = 35
+            self.surrounding_x_seconds = 115
+            self.surrounding_y_seconds = 20
         else:
-            self.surrounding_x_seconds = 120
-            self.surrounding_y_seconds = 30
+            self.surrounding_x_seconds = 110
+            self.surrounding_y_seconds = 15
 
-        # Set speed_duration based on selection
-        if self.surrounding_speed_value == 1:
-            self.surrounding_speed_duration = int(2.5 * 60)
-        elif self.surrounding_speed_value == 2:
-            self.surrounding_speed_duration = 5 * 60
-        elif self.surrounding_speed_value == 3:
-            self.surrounding_speed_duration = 8 * 60
+        # Set speed_duration and off_cycle based on selection (new mapping)
+        speed_choice = self.surrounding_speed_levels[self.surrounding_speed_value - 1][0]
+        if speed_choice == "3 minutes":
+            self.surrounding_speed_duration = 180
+            w = 25
+        elif speed_choice == "4 minutes":
+            self.surrounding_speed_duration = 240
+            w = 33
+        elif speed_choice == "5 minutes":
+            self.surrounding_speed_duration = 300
+            w = 41
         else:
-            self.surrounding_speed_duration = 5 * 60
-
+            self.surrounding_speed_duration = 180
+            w = 25
+        self.surrounding_off_cycle = w
         # Also update speed_end_time to match selected speed_duration
         self.surrounding_speed_start_time = time.time()
         self.surrounding_speed_end_time = self.surrounding_speed_start_time + self.surrounding_speed_duration
@@ -915,12 +926,12 @@ class ThariBakhoorApp(tk.Tk):
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
 
     def _surrounding_mode_flow(self):
-        # Implements the new surrounding mode logic, using the same logic as clothes mode flow (without initial door unlock).
+        # Implements the surrounding mode heater cycle logic with ON/OFF, temperature check, and UI updates.
         x = getattr(self, "surrounding_x_seconds", 120)
         y = getattr(self, "surrounding_y_seconds", 30)
-        z = getattr(self, "surrounding_speed_duration", 300)
+        z = getattr(self, "surrounding_speed_duration", 180)
+        w = getattr(self, "surrounding_off_cycle", 25)
 
-        # Remove initial door unlock logic (as in clothes mode, but skip unlock at start)
         # Start Speed timer and begin heat cycle
         speed_start_time = time.time()
         speed_end_time = speed_start_time + z
@@ -928,6 +939,7 @@ class ThariBakhoorApp(tk.Tk):
         # Heater ON for X seconds (preheat)
         self._update_surrounding_mode_label(f"Preheating... Heater ON for {x}s")
         if ENABLE_HARDWARE:
+            self._set_fan_pwm(10)
             self.heater_on(self.pi, self.heater_ssr_pin)
         preheat_start = time.time()
         while True:
@@ -935,6 +947,10 @@ class ThariBakhoorApp(tk.Tk):
             if elapsed >= x:
                 break
             seconds_left = max(0, x - elapsed)
+            # After 60 seconds, set fan PWM to 25%
+            if ENABLE_HARDWARE:
+                if time.time() - preheat_start > 60:
+                    self._set_fan_pwm(25)
             self._update_surrounding_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
@@ -946,27 +962,12 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self._set_fan_pwm(25)
 
-        # 3. Alternate heater ON/OFF every Y seconds, check temp every 5s, for duration of Z (speed) timer
+        # Main ON/OFF heater cycle for surrounding mode
         last_temp_check = 0
         while time.time() < speed_end_time:
-            now = time.time()
-            # Check temp every 5s
-            if now - last_temp_check >= 5:
-                temp = self._get_temp_value()
-                last_temp_check = now
-                if temp >= 150:
-                    self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
-                    if ENABLE_HARDWARE:
-                        self.heater_off(self.pi, self.heater_ssr_pin)
-                    # Wait for Y seconds
-                    for i in range(y):
-                        if time.time() >= speed_end_time:
-                            break
-                        self._update_surrounding_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
-                        time.sleep(1)
-                    continue
-            # Heater ON for Y seconds
-            self._update_surrounding_mode_label(f"Heater ON for {y}s.")
+            # HEATER ON PHASE (Y seconds)
+            on_start = time.time()
+            heater_should_continue = True
             if ENABLE_HARDWARE:
                 self.heater_on(self.pi, self.heater_ssr_pin)
             for i in range(y):
@@ -974,38 +975,39 @@ class ThariBakhoorApp(tk.Tk):
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
+                # Update UI with ON phase
                 self._update_surrounding_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
                 # Check temp every 5s
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
+                        # Temp too high, turn off heater, update UI, skip rest of ON time
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
+                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF. Skipping ON cycle.")
+                        heater_should_continue = False
                         break
                 time.sleep(1)
-            if time.time() >= speed_end_time:
-                break
-            # Heater OFF for Y seconds
-            self._update_surrounding_mode_label(f"Heater OFF for {y}s.")
+            # Ensure heater is off after ON phase or if skipped
             if ENABLE_HARDWARE:
                 self.heater_off(self.pi, self.heater_ssr_pin)
-            for i in range(y):
+            if time.time() >= speed_end_time:
+                break
+            # HEATER OFF PHASE (w seconds)
+            for i in range(w):
                 if time.time() >= speed_end_time:
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
-                y_remaining = max(0, y - i)
-                self._update_surrounding_mode_label(f"HEATER OFF | Z: {z_remaining}s | Y: {y_remaining}s")
-                # Check temp every 5s
+                w_remaining = max(0, w - i)
+                self._update_surrounding_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
+                # Check temp every 5s during OFF as well
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
-                        if ENABLE_HARDWARE:
-                            self.heater_off(self.pi, self.heater_ssr_pin)
-                        break
+                        # Already off, just update UI
+                        self._update_surrounding_mode_label(f"Temperature >150°C ({temp}°C). Heater remains OFF.")
                 time.sleep(1)
         # Ensure heater is OFF at the end
         if ENABLE_HARDWARE:
