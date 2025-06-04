@@ -2143,17 +2143,17 @@ class ThariBakhoorApp(tk.Tk):
         label.pack(pady=40)
 
         exit_btn = tk.Button(
-        self.safe_mode_frame,
-        text="Exit to main menu",
-        command=self.return_to_main_menu,
-        bg="#3d2d22",
-        fg="#f4e9e1",
-        activebackground="#5c4033",
-        activeforeground="#ffffff",
-        font=("Helvetica", 16),
-        width=20,
-        height=2
-    )
+            self.safe_mode_frame,
+            text="Exit to main menu",
+            command=self.exit_safe_mode,
+            bg="#3d2d22",
+            fg="#f4e9e1",
+            activebackground="#5c4033",
+            activeforeground="#ffffff",
+            font=("Helvetica", 16),
+            width=20,
+            height=2
+        )
         exit_btn.pack(pady=20)
         
     def exit_safe_mode(self):
