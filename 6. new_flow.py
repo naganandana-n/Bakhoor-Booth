@@ -825,13 +825,14 @@ class ThariBakhoorApp(tk.Tk):
         time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
         # HEAT CONTROL (3 bars: Low, Medium, High)
+        # Remove time details from button text
         self.surrounding_heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
         self.surrounding_heat_buttons = []
         self.selected_surrounding_heat_level = "Medium"  # Default selection
         for i, (level, label) in enumerate(self.surrounding_heat_levels):
             btn = tk.Button(
                 self.heat_frame,
-                text=f"{level}\n{label}",
+                text=f"{level}",
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if level == self.selected_surrounding_heat_level else "raised",
@@ -847,13 +848,14 @@ class ThariBakhoorApp(tk.Tk):
         self.set_surrounding_heat_params_from_level(self.selected_surrounding_heat_level)
 
         # SPEED CONTROL (3 bars: 3 min, 4 min, 5 min)
+        # Remove time details from button text
         self.surrounding_speed_levels = [("3 minutes", "180s"), ("4 minutes", "240s"), ("5 minutes", "300s")]
         self.surrounding_speed_buttons = []
         self.selected_surrounding_speed_value = 1  # Default selection is 3 minutes (index=0)
         for i, (level, label) in enumerate(self.surrounding_speed_levels):
             btn = tk.Button(
                 self.speed_frame,
-                text=f"{level}\n{label}",
+                text=f"{level}",
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if i == self.selected_surrounding_speed_value - 1 else "raised",
