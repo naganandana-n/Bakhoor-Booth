@@ -339,22 +339,22 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time_record_label()
 
     def set_heat_params_from_level(self, level):
-        # Map heat level to x_seconds, y_seconds, heat_duration
+        # Map heat level to x_seconds, y_seconds, heat_duration (person mode)
         if level == "Low":
-            self.x_seconds = 110
-            self.y_seconds = 25
+            self.x_seconds = 105
+            self.y_seconds = 10
             self.heat_duration = 120
         elif level == "Medium":
-            self.x_seconds = 120
-            self.y_seconds = 30
+            self.x_seconds = 110
+            self.y_seconds = 15
             self.heat_duration = 130
         elif level == "High":
-            self.x_seconds = 130
-            self.y_seconds = 35
+            self.x_seconds = 115
+            self.y_seconds = 20
             self.heat_duration = 140
         else:
-            self.x_seconds = 120
-            self.y_seconds = 30
+            self.x_seconds = 110
+            self.y_seconds = 15
             self.heat_duration = 130
 
     def select_speed_level(self, idx):
@@ -366,14 +366,21 @@ class ThariBakhoorApp(tk.Tk):
 
     def set_speed_param_from_value(self, value):
         # value: 1, 2, 3
+        # Map to 3, 4, 5 minutes for person mode, and set w accordingly
         if value == 1:
-            self.speed_duration = 150
+            self.person_speed_duration = 180
+            self.w = 25
         elif value == 2:
-            self.speed_duration = 300
+            self.person_speed_duration = 240
+            self.w = 33
         elif value == 3:
-            self.speed_duration = 480
+            self.person_speed_duration = 300
+            self.w = 41
         else:
-            self.speed_duration = 300
+            self.person_speed_duration = 180
+            self.w = 25
+        # For backward compatibility, also set speed_duration
+        self.speed_duration = self.person_speed_duration
 
     def update_time_record_label(self):
         # Show a summary of the current settings (heat_duration + speed_duration)
@@ -1211,49 +1218,44 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
 
-        # Start speed timer immediately after door locks (before preheat X starts)
-        self.speed_start_time = time.time()
-        self.speed_end_time = self.speed_start_time + getattr(self, "speed_duration", 300)
-
-        # Before starting the mode flow, process heat level and speed to set x_seconds, y_seconds, speed_duration
-        # Assign self.heat_level and self.speed_value from current selections
+        # Before starting the mode flow, process heat level and speed to set x_seconds, y_seconds, speed_duration, w
         self.heat_level = getattr(self, "selected_heat_level", "Medium")
         self.speed_value = getattr(self, "selected_speed_value", 2)
-
-        # Set x_seconds and y_seconds based on self.heat_level
+        # Set x_seconds and y_seconds based on self.heat_level (use new mapping)
         if self.heat_level == "Low":
-            self.x_seconds = 110
-            self.y_seconds = 25
+            self.x_seconds = 105
+            self.y_seconds = 10
         elif self.heat_level == "Medium":
-            self.x_seconds = 120
-            self.y_seconds = 30
+            self.x_seconds = 110
+            self.y_seconds = 15
         elif self.heat_level == "High":
-            self.x_seconds = 130
-            self.y_seconds = 35
+            self.x_seconds = 115
+            self.y_seconds = 20
         else:
-            self.x_seconds = 120
-            self.y_seconds = 30  # Default
-
-        # Set speed_duration based on self.speed_value
+            self.x_seconds = 110
+            self.y_seconds = 15  # Default
+        # Set speed_duration and w based on self.speed_value (using mapping as in clothes/surrounding)
         if self.speed_value == 1:
-            self.speed_duration = int(2.5 * 60)  # 2.5 minutes
+            self.person_speed_duration = 180
+            self.w = 25
         elif self.speed_value == 2:
-            self.speed_duration = 5 * 60         # 5 minutes
+            self.person_speed_duration = 240
+            self.w = 33
         elif self.speed_value == 3:
-            self.speed_duration = 8 * 60         # 8 minutes
+            self.person_speed_duration = 300
+            self.w = 41
         else:
-            self.speed_duration = 5 * 60         # Default
-
+            self.person_speed_duration = 180
+            self.w = 25
+        self.speed_duration = self.person_speed_duration
         # Also update speed_end_time to match selected speed_duration
         self.speed_start_time = time.time()
         self.speed_end_time = self.speed_start_time + self.speed_duration
-
         # Show a new frame for the sequence
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
         self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
         self.person_mode_label.pack(pady=40)
-
         # Centered Safe Mode button, styled to match clothes mode button
         safe_button = tk.Button(
             self.person_mode_frame,
@@ -1267,15 +1269,15 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         safe_button.pack(pady=10, anchor="center")
-
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
     def _person_mode_flow(self):
-        # Implements the full person mode flow, using self.speed_start_time and self.speed_end_time for Y-cycle.
+        # Implements the full person mode flow, using self.speed_start_time and self.speed_end_time for ON/OFF cycles.
         x = self.x_seconds
         y = self.y_seconds
-        # Use speed timer from self.speed_start_time and self.speed_end_time
+        w = self.w
+        z = self.person_speed_duration
         # 1. Lock the door immediately
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
@@ -1284,18 +1286,24 @@ class ThariBakhoorApp(tk.Tk):
         # 2. Turn on heater and start X timer (preheat)
         if ENABLE_HARDWARE:
             self.heater_on(self.pi, self.heater_ssr_pin)
+            # Fan control: Start fan at 10% PWM immediately
+            self.set_fan_pwm(self.pi, self.fan_gpio_pin, 10)
         preheat_start = time.time()
+        fan_pwm_25_set = False
         preheat_elapsed = 0
         entry_detected = False
         paused = False
         pause_start = None
         waited_while_zero = 0
-        fan_10_after_unlock = False
         # 3. After 30s, unlock door for entry, but continue X timer (pause/resume if no entry)
         while preheat_elapsed < x:
             now = time.time()
             preheat_elapsed = int(now - preheat_start)
             seconds_left = max(0, x - preheat_elapsed)
+            # Fan logic: after 60s, increase to 25%
+            if ENABLE_HARDWARE and not fan_pwm_25_set and (now - preheat_start) >= 60:
+                self.set_fan_pwm(self.pi, self.fan_gpio_pin, 25)
+                fan_pwm_25_set = True
             if preheat_elapsed < 30:
                 self._update_person_mode_label(f"Preheating... {seconds_left}s left. Door unlocks in {30-preheat_elapsed}s")
                 time.sleep(1)
@@ -1306,10 +1314,6 @@ class ThariBakhoorApp(tk.Tk):
                 if ENABLE_HARDWARE:
                     self.pi.write(self.door_ssr_pin, 0)
                 time.sleep(2)
-                # After unlocking door, immediately turn fan ON at 10% PWM
-                if ENABLE_HARDWARE:
-                    self._set_fan_pwm(25)  # Fan at 10% after door unlocks
-                fan_10_after_unlock = True
             # After 30s: check for entry
             weight = self._get_weight_value()
             # If no entry (weight == 0), pause X timer after 15s
@@ -1361,72 +1365,50 @@ class ThariBakhoorApp(tk.Tk):
         self._update_person_mode_label("Preheat complete. Heater OFF.")
         time.sleep(1)
 
-        # 4. Cyclic Y timer: alternate heater ON/OFF every Y seconds for speed_duration, with temperature checks
-        # Use self.speed_start_time and self.speed_end_time as the timer.
+        # 4. Cyclic ON/OFF heater cycle: ON for y seconds (check temp every 5s), OFF for w seconds, repeat until speed timer ends
         last_temp_check = 0
-        # No further weight checks after person entry (per requirements)
-        while time.time() < self.speed_end_time:
-            now = time.time()
-            # Check temp every 5s
-            if now - last_temp_check >= 5:
-                temp = self._get_temp_value()
-                last_temp_check = now
-                if temp >= 150:
-                    self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
-                    if ENABLE_HARDWARE:
-                        self.heater_off(self.pi, self.heater_ssr_pin)
-                    # Wait for Y seconds before continuing
-                    for i in range(y):
-                        if time.time() >= self.speed_end_time:
-                            break
-                        self._update_person_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
-                        time.sleep(1)
-                    continue
-            # Heater OFF Y seconds
-            self._update_person_mode_label(f"Heater OFF for {y}s.")
-            if ENABLE_HARDWARE:
-                self.heater_off(self.pi, self.heater_ssr_pin)
-            for i in range(y):
-                if time.time() >= self.speed_end_time:
-                    break
-                z_remaining = max(0, int(self.speed_end_time - time.time()))
-                y_remaining = max(0, y - i)
-                self._update_person_mode_label(f"HEATER OFF | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
-                # Temperature safety
-                if (time.time() - last_temp_check) >= 5:
-                    temp = self._get_temp_value()
-                    last_temp_check = time.time()
-                    if temp >= 150:
-                        self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
-                        if ENABLE_HARDWARE:
-                            self.heater_off(self.pi, self.heater_ssr_pin)
-                        break
-                time.sleep(1)
-            if time.time() >= self.speed_end_time:
-                break
-            # Check temp before ON
-            temp = self._get_temp_value()
-            if temp >= 150:
-                self._update_person_mode_label(f"Temperature still high ({temp}°C). Skipping ON cycle.")
-                continue
-            # Heater ON Y seconds
-            self._update_person_mode_label(f"Heater ON for {y}s.")
+        speed_start_time = time.time()
+        speed_end_time = speed_start_time + z
+        while time.time() < speed_end_time:
+            # HEATER ON PHASE (Y seconds), check temp every 5s
+            heater_on_flag = True
             if ENABLE_HARDWARE:
                 self.heater_on(self.pi, self.heater_ssr_pin)
             for i in range(y):
-                if time.time() >= self.speed_end_time:
+                if time.time() >= speed_end_time:
                     break
-                z_remaining = max(0, int(self.speed_end_time - time.time()))
+                z_remaining = max(0, int(speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
-                self._update_person_mode_label(f"HEATER ON | remaining Z time: {z_remaining}s | Remaining Y time: {y_remaining}s")
+                # Fan logic: after 60s since speed_start_time, ensure 25%
+                if ENABLE_HARDWARE and (time.time() - speed_start_time) >= 60:
+                    self.set_fan_pwm(self.pi, self.fan_gpio_pin, 25)
+                self._update_person_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_person_mode_label(f"Temperature too high ({temp}°C). Heater OFF for {y}s.")
+                        self._update_person_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {w}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
+                        heater_on_flag = False
                         break
+                time.sleep(1)
+            if time.time() >= speed_end_time:
+                break
+            # HEATER OFF PHASE (W seconds)
+            if ENABLE_HARDWARE:
+                self.heater_off(self.pi, self.heater_ssr_pin)
+            for i in range(w):
+                if time.time() >= speed_end_time:
+                    break
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                w_remaining = max(0, w - i)
+                self._update_person_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
+                if (time.time() - last_temp_check) >= 5:
+                    temp = self._get_temp_value()
+                    last_temp_check = time.time()
+                    if temp >= 150:
+                        self._update_person_mode_label(f"Temperature >150°C ({temp}°C). Heater remains OFF.")
                 time.sleep(1)
         # Ensure heater is OFF at the end
         if ENABLE_HARDWARE:
@@ -1434,30 +1416,21 @@ class ThariBakhoorApp(tk.Tk):
         self._update_person_mode_label("Heating cycle complete. Heater OFF.")
         time.sleep(1)
 
-        # 5. FAN CONTROL: After speed timer ends, run fan at 10% PWM for 30s, then 100% PWM for 3 min
-        self._update_person_mode_label("Cooling: Fan 10% for 30s...")
+        # 5. FAN CONTROL: After speed timer ends, run fan at 100% PWM for 3 min, then 5-min cooldown
+        self._update_person_mode_label("Post-cycle: Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
-            self._set_fan_pwm(25)
-        for i in range(30):
-            self._update_person_mode_label(f"Cooling: Fan 10% for {30-i}s")
-            time.sleep(1)
-        self._update_person_mode_label("Cooling: Fan 100% for 3 min...")
-        if ENABLE_HARDWARE:
-            self._set_fan_pwm(100)
+            self.set_fan_pwm(self.pi, self.fan_gpio_pin, 100)
         for i in range(180):
-            self._update_person_mode_label(f"Cooling: Fan 100% for {180-i}s")
+            self._update_person_mode_label(f"Fan 100%: {180-i}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
-            self._set_fan_pwm(0)
-        self._update_person_mode_label("Cooling complete. Fan OFF.")
-        time.sleep(1)
-
+            self.set_fan_pwm(self.pi, self.fan_gpio_pin, 0)
+        self._update_person_mode_label("Cooldown: 5 min safety timer.")
         # 6. Show 5-minute timer display (user can see countdown)
-        self._update_person_mode_label("Please wait: 5 min timer for safety.")
         for i in range(5*60):
             mins = (5*60 - i) // 60
             secs = (5*60 - i) % 60
-            self._update_person_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining")
+            self._update_person_mode_label(f"Please wait: {mins:02d}:{secs:02d} remaining (Cooldown)")
             # Also check temp every 5s, turn off heater if >150C
             if i % 5 == 0:
                 temp = self._get_temp_value()
@@ -1472,6 +1445,17 @@ class ThariBakhoorApp(tk.Tk):
         self._update_person_mode_label("Done. Door unlocked.")
         time.sleep(3)
         self.person_mode_frame.after(0, self.show_main_screen_buttons)
+
+    def set_fan_pwm(self, pi, fan_pin, percent):
+        """Set the fan PWM to a given percent (0-100)."""
+        if not ENABLE_HARDWARE:
+            print(f"[SIMULATED] Fan set to {percent}% PWM")
+            return
+        try:
+            duty = int(percent * 255 / 100)
+            pi.set_PWM_dutycycle(fan_pin, duty)
+        except Exception as e:
+            print(f"Error setting fan PWM: {e}")
 
     def _set_fan_pwm(self, percent):
         # Helper to set fan GPIO PWM (software fallback if no hardware PWM)
