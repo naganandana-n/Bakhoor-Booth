@@ -595,15 +595,20 @@ class ThariBakhoorApp(tk.Tk):
             self.clothes_x_seconds = 120
             self.clothes_y_seconds = 30
 
-        # Set speed_duration based on selection
-        if self.clothes_speed_value == 1:
-            self.clothes_speed_duration = 150
-        elif self.clothes_speed_value == 2:
+        # Set speed_duration and off_cycle based on selection (new mapping)
+        speed_choice = self.clothes_speed_levels[self.clothes_speed_value - 1][0]
+        if speed_choice == "3 minutes":
+            self.clothes_speed_duration = 180
+            w = 25
+        elif speed_choice == "4 minutes":
+            self.clothes_speed_duration = 240
+            w = 33
+        elif speed_choice == "5 minutes":
             self.clothes_speed_duration = 300
-        elif self.clothes_speed_value == 3:
-            self.clothes_speed_duration = 480
+            w = 41
         else:
-            self.clothes_speed_duration = 300
+            self.clothes_speed_duration = 180
+            w = 25
 
         # Also update speed_end_time to match selected speed_duration
         self.clothes_speed_start_time = None  # will be set after weight=0
@@ -639,6 +644,16 @@ class ThariBakhoorApp(tk.Tk):
         x = getattr(self, "clothes_x_seconds", 120)
         y = getattr(self, "clothes_y_seconds", 30)
         z = getattr(self, "clothes_speed_duration", 300)
+        # Use the mapping as set in start_clothes_mode_sequence for w
+        speed_choice = self.clothes_speed_levels[getattr(self, "selected_clothes_speed_value", 2) - 1][0]
+        if speed_choice == "3 minutes":
+            w = 25
+        elif speed_choice == "4 minutes":
+            w = 33
+        elif speed_choice == "5 minutes":
+            w = 41
+        else:
+            w = 25
 
         # 1. After clicking Start, check current weight
         weight = self._get_weight_value() if ENABLE_HARDWARE else 0
@@ -693,33 +708,17 @@ class ThariBakhoorApp(tk.Tk):
         if ENABLE_HARDWARE:
             self._set_fan_pwm(25)
 
-        # 3. Alternate heater ON/OFF every Y seconds, check temp every 5s, for duration of Z (speed) timer
+        # 3. New ON/OFF heater cycle for clothes mode (Y ON, W OFF, temp check every 5s)
         last_temp_check = 0
-        while time.time() < self.clothes_speed_end_time:
-            now = time.time()
-            # Check temp every 5s
-            if now - last_temp_check >= 5:
-                temp = self._get_temp_value()
-                last_temp_check = now
-                if temp >= 150:
-                    self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
-                    if ENABLE_HARDWARE:
-                        self.heater_off(self.pi, self.heater_ssr_pin)
-                    # Wait for Y seconds
-                    for i in range(y):
-                        if time.time() >= self.clothes_speed_end_time:
-                            break
-                        self._update_clothes_mode_label(f"Cooling (temp={temp}°C)... {y-i}s")
-                        time.sleep(1)
-                    continue
-            # Heater ON for Y seconds
-            self._update_clothes_mode_label(f"Heater ON for {y}s.")
+        speed_end_time = self.clothes_speed_end_time
+        while time.time() < speed_end_time:
+            # HEATER ON phase for Y seconds
             if ENABLE_HARDWARE:
                 self.heater_on(self.pi, self.heater_ssr_pin)
             for i in range(y):
-                if time.time() >= self.clothes_speed_end_time:
+                if time.time() >= speed_end_time:
                     break
-                z_remaining = max(0, int(self.clothes_speed_end_time - time.time()))
+                z_remaining = max(0, int(speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
                 self._update_clothes_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
                 # Check temp every 5s
@@ -727,32 +726,27 @@ class ThariBakhoorApp(tk.Tk):
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
                     if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
+                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {w}s.")
                         if ENABLE_HARDWARE:
                             self.heater_off(self.pi, self.heater_ssr_pin)
                         break
                 time.sleep(1)
-            if time.time() >= self.clothes_speed_end_time:
+
+            if time.time() >= speed_end_time:
                 break
-            # Heater OFF for Y seconds
-            self._update_clothes_mode_label(f"Heater OFF for {y}s.")
+
+            # HEATER OFF phase for W seconds
             if ENABLE_HARDWARE:
                 self.heater_off(self.pi, self.heater_ssr_pin)
-            for i in range(y):
-                if time.time() >= self.clothes_speed_end_time:
+            for i in range(w):
+                if time.time() >= speed_end_time:
                     break
-                z_remaining = max(0, int(self.clothes_speed_end_time - time.time()))
-                y_remaining = max(0, y - i)
-                self._update_clothes_mode_label(f"HEATER OFF | Z: {z_remaining}s | Y: {y_remaining}s")
-                # Check temp every 5s
+                z_remaining = max(0, int(speed_end_time - time.time()))
+                w_remaining = max(0, w - i)
+                self._update_clothes_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
-                    if temp >= 150:
-                        self._update_clothes_mode_label(f"Temperature >150°C ({temp}°C). Heater OFF for {y}s.")
-                        if ENABLE_HARDWARE:
-                            self.heater_off(self.pi, self.heater_ssr_pin)
-                        break
                 time.sleep(1)
         # Ensure heater is OFF at the end
         if ENABLE_HARDWARE:
@@ -1815,364 +1809,3 @@ class ThariBakhoorApp(tk.Tk):
         self.time_frame.destroy()
         self.heat_frame.destroy()
         self.speed_frame.destroy()
-        self.button_panel_frame.destroy()
-
-        # Simulate heater wait + transition to working screen
-        self.waiting_screen()
-
-
-
-    def get_time_value(self):
-        try:
-            current_time = self.time_record["text"]
-            hours, minutes, seconds = map(int, current_time.split(":"))
-            total_minutes = hours * 60 + minutes + (seconds / 60)
-            return total_minutes
-        except ValueError:
-            return 0
-        
-    
-
-    def show_main_screen_buttons(self):
-        # Destroy the custom screen
-        for widget in self.winfo_children():
-            widget.destroy()
-
-        # Add main_frame as the parent for all main screen widgets
-        self.main_frame = tk.Frame(self, bg="#f4e9e1")
-        self.main_frame.pack(expand=True)
-
-        # Reload the main screen buttons
-        self.load_logo()
-        self.load_date_time()
-        self.load_buttons()
-        # Ensure time is restarted only when the main page is loaded
-        self.update_time()
-    
-        self.running = True
-        self.person_running = False
-
-    def cleanup_gpio(self):
-        if ENABLE_HARDWARE:
-            # Turn off all heaters
-            self.heater_off(self.pi, self.heater_ssr_pin)
-            # Turn off all fans
-            # self.initialize_fans_0(self.kit, self.fan_channels)
-            GPIO.output(self.fan_gpio_pin, GPIO.LOW)
-            # Close GPIO pins
-            GPIO.cleanup()
-            # Disconnect from pigpio
-            self.pi.stop()
-
-    # Override the default destroy method of your Tkinter application
-    def destroy(self):
-        # Call the cleanup method before destroying the application
-        self.cleanup_gpio()
-        # Call the destroy method of the super class
-        super().destroy()    
-
-    def clear_time(self):
-        self.time_record.config(text="00:00:00")
-
-    def add_time(self, minutes):
-        current_time = self.time_record["text"]
-        total_hours = 0  # Initialize total_hours
-        try:
-            current_hours, current_minutes, current_seconds = map(int, current_time.split(":"))
-            total_minutes = current_minutes + minutes
-            total_seconds = current_seconds
-
-            # Ensure total time does not exceed 90 minutes (1 hour 30 minutes)
-            if current_hours == 1 and current_minutes >= 30:
-                messagebox.showinfo("Limit Reached", "Maximum time limit reached (1 hour 30 minutes)")
-                return  # Stop further execution
-
-            # Handle incrementing hours if total minutes exceed 60
-            if total_minutes >= 60:
-                total_hours = current_hours + 1  # Increment hour by 1
-                total_minutes -= 60              # Subtract 60 to keep the minutes within 0-59 range
-
-            else:
-                total_hours = current_hours  # No change in hours
-
-            # Ensure total time does not exceed 90 minutes (1 hour 30 minutes)
-            if total_hours == 1 and total_minutes > 30:
-                total_minutes = 30
-                messagebox.showinfo("Limit Reached", "Maximum time limit reached (1 hour 30 minutes)")
-
-            self.time_record.config(text="{:02d}:{:02d}:{:02d}".format(total_hours, total_minutes, total_seconds))
-        except ValueError:
-            messagebox.showerror("Error", "Invalid time format")
-
-    def fill_progress(self, event, clicked_progress_bar):
-        # Determine the index of the clicked progress bar
-        if clicked_progress_bar in self.heat_progress_bars:
-            progress_bars = self.heat_progress_bars
-            print("Clicked progress bar is in heat_progress_bars")
-        elif clicked_progress_bar in self.speed_progress_bars:
-            progress_bars = self.speed_progress_bars
-            print("Clicked progress bar is in speed_progress_bars")
-
-        clicked_index = progress_bars.index(clicked_progress_bar)
-
-        # Print the values of the progress bars
-        print("Progress bar values before update:", [pb["value"] for pb in progress_bars])
-
-        # Apply the style to the clicked progress bar
-        clicked_progress_bar["style"] = "Custom.Vertical.TProgressbar"
-
-        # Iterate through all progress bars
-        for i, progress_bar in enumerate(progress_bars):
-            # If the current progress bar is before or at the clicked index,
-            # set its value to 100 and change its color, otherwise set it to 0
-            progress_bar["value"] = 100 if i <= clicked_index else 0
-
-        # Print the updated values of the progress bars
-        print("Progress bar values after update:", [pb["value"] for pb in progress_bars])
-
-
-
-#Code for the python-sensorsdef check_person_weight(self):
-    def check_person_weight(self): 
-        if ENABLE_HARDWARE:
-            weight_safe = self.checking_weight()
-            if weight_safe:
-                print("Weight detected, auto start happening as more than 50kg")
-                self.auto_start_save()
-            else:
-                print("Weight not detected, auto start will not be activated")
-        else:
-            print("[GUI-only] Skipping weight check.")
-
-    
-
-    def initialize_weight(self):
-        print("Weight initialization handled by ESP32 via serial.")
-        
-
-    def checking_weight(self):
-        if not ENABLE_HARDWARE:
-            print("[GUI-only] Skipping weight check. Returning False.")
-            return False
-        try:
-            self.serial.write(b'get_weight\n')
-            response = self.serial.readline().decode().strip()
-            if response.startswith("KG:"):
-                weight_kg = float(response.split(":")[1])
-                print(f"Weight: {weight_kg:.2f} kg")
-                return weight_kg > 4.00
-            else:
-                print(f"Unexpected weight response: {response}")
-                return False
-            
-        except Exception as e:
-            print(f"Serial error while reading weight: {e}")
-            return False
-
-
-    def _get_weight_value(self):
-        try:
-            self.serial.write(b'get_weight')
-            response = self.serial.readline().decode().strip()
-            if response.startswith("KG:"):
-                weight_kg = float(response.split(":")[1])
-                print(f"[Weight Check] Current weight: {weight_kg:.2f} kg")
-                return weight_kg
-            else:
-                print(f"[Weight Check] Unexpected response: {response}")
-                return 0.0
-        except Exception as e:
-            print(f"[Weight Check] Serial error: {e}")
-            return 0.0
-        
-    def _get_temp_value(self):
-        try:
-            self.serial.write(b'get_temp')
-            response = self.serial.readline().decode().strip()
-            if response.startswith("TEMP:"):
-                temp_c = float(response.split(":")[1])
-                print(f"[Temp Check] Current temperature: {temp_c:.2f} °C")
-                return temp_c
-            else:
-                print(f"[Temp Check] Unexpected response: {response}")
-                return 0.0
-        except Exception as e:
-            print(f"[Temp Check] Serial error: {e}")
-            return 0.0
-    
-    
-
-
-    
-
-
-    def read_temperature(self, pi, sensor, target_temp):
-        if not ENABLE_HARDWARE:
-            print(f"[SIMULATED] Returning fixed GUI-mode temperature: {target_temp + 5}")
-            return target_temp + 5  # Simulated temperature for GUI-only testing
-
-        try:
-            self.serial.write(b'get_temp\n')
-            response = self.serial.readline().decode().strip()
-            if response.startswith("TEMP:"):
-                float_temp = float(response.split(":")[1])
-                print(f"Received temperature: {float_temp:.2f} °C")
-                if float_temp >= 450:
-                    self.heater_off(self.pi, self.heater_ssr_pin)
-                    print(" EMERGENCY: Heater turned OFF due to temperature > 450°C")
-                    messagebox.showerror("Overheat Alert", "Temperature exceeded 450°C! Heater has been shut down.")
-                return float_temp
-            else:
-                # print(f"SPI read error. Bytes received: {c}")
-            # time.sleep(1)
-                print(f"Unexpected temperature response: {response}")
-                return 0.0
-        except Exception as e:
-            print(f"Serial error while reading temperature: {e}")
-            return 0.0
-
-        # print("Temperature read timeout. Returning fallback value 0.0")
-        # return 0.0
-
-    def read_temperature_average(self, pi, sensor, duration):
-        if not ENABLE_HARDWARE:
-            print(f"[SIMULATED] Average temperature over {duration}s: 35.0°C")
-            return 35.0  # Simulated average for GUI-only mode
-
-        start_time = time.time()
-        # stop_time = start_time + duration
-        temp_readings = []
-
-        while time.time() - start_time < duration:
-            try:
-                self.serial.write(b'get_temp\n')
-                response = self.serial.readline().decode().strip()
-                if response.startswith("TEMP:"):
-                    temp = float(response.split(":")[1])
-                    temp_readings.append(temp)
-                    print(f"Temperature: {temp:.2f}°C")
-                else:
-                    print(f"Unexpected response: {response}")
-            except Exception as e:
-                print(f"Serial error while reading temperature: {e}")
-                    # print("Bad reading: {:016b}".format(word))
-            # else:
-                # print("SPI read error. Bytes received:", c)
-            time.sleep(0.5)
-
-        if temp_readings:
-            avg_temp = sum(temp_readings) / len(temp_readings)
-            # print("Average Temperature:", "{:.2f}".format(avg_temp))
-            print(f"Average Temperature: {avg_temp:.2f}°C")
-            return avg_temp
-        else:
-            print("No temperature readings recorded. Returning fallback 0.0")
-            return 0.0
-
-    def heater_on(self, pi, heater_ssr_pin):
-        if ENABLE_HARDWARE:
-            pi.write(heater_ssr_pin, 1)
-            print("Heater turned on")
-        else:
-            print("[SIMULATED] Heater ON")
-
-    def heater_off(self, pi, heater_ssr_pin):
-        if ENABLE_HARDWARE:
-            pi.write(heater_ssr_pin, 0)
-            print("Heater turned off")
-        else:
-            print("[SIMULATED] Heater OFF")
-
-    def initialize_fans_0(self, kit, fan_channels):
-        if ENABLE_HARDWARE:
-            for channel in fan_channels:
-                kit._pca.channels[channel].duty_cycle = 0
-        else:
-            print("[SIMULATED] Fans set to 0% duty cycle")
-
-    def initialize_fans_100(self, kit, fan_channels):
-        if ENABLE_HARDWARE:
-            for channel in fan_channels:
-                kit._pca.channels[channel].duty_cycle = 100
-        else:
-            print("[SIMULATED] Fans set to 100% duty cycle")
-
-    def control_fans(self, kit, fan_channels, duty_cycles):
-        if ENABLE_HARDWARE:
-            for channel, duty_cycle in zip(fan_channels, duty_cycles):
-                kit._pca.channels[channel].duty_cycle = int(duty_cycle * 65535 / 100)
-        else:
-            print("[SIMULATED] Setting fan duty cycles:", duty_cycles)
-
-    def cooling_system_down(self):
-        duty_cycles = [50] * 12  # 12 fan channels
-        if ENABLE_HARDWARE:
-            self.control_fans(self.kit, self.fan_channels, duty_cycles)
-        else:
-            print("[SIMULATED] Cooling system fans set to 50% duty cycle")
-    
-    def _update_person_mode_label(self, message):
-        if hasattr(self, "person_mode_label"):
-            self.person_mode_label.config(
-                text=message,
-                font=("DM Sans", 12)
-            )
-    
-    def activate_safe_mode(self):
-        # Disable heater
-        if ENABLE_HARDWARE:
-            self.heater_off(self.pi, self.heater_ssr_pin)
-            self.pi.write(self.door_ssr_pin, 0)  # Unlock the door
-            # self.initialize_fans_0(self.kit, self.fan_channels)  # Turn off fans
-            self._set_fan_pwm(0)
-
-        for widget in self.winfo_children():
-            if isinstance(widget, tk.Label) and widget in [self.logo_label, self.time_label]:
-                continue
-            widget.destroy()
-
-        # Show Safe Mode screen
-        self.safe_mode_frame = tk.Frame(self, bg="#f4e9e1")
-        self.safe_mode_frame.pack(expand=True)
-
-        label = tk.Label(
-            self.safe_mode_frame,
-            text="SAFE MODE ACTIVATED\n\nHeater disabled.\nDoor unlocked.\nFans turned off.",
-            font=("DM Sans", 16),
-            bg="#f4e9e1",
-            justify="center"
-        )
-        label.pack(pady=40)
-
-        exit_btn = tk.Button(
-            self.safe_mode_frame,
-            text="Exit to main menu",
-            command=self.exit_safe_mode,
-            bg="#3d2d22",
-            fg="#f4e9e1",
-            activebackground="#5c4033",
-            activeforeground="#ffffff",
-            font=("Helvetica", 16),
-            width=20,
-            height=2
-        )
-        exit_btn.pack(pady=20)
-        
-    def exit_safe_mode(self):
-        # Clear everything on screen
-        for widget in self.winfo_children():
-            widget.destroy()
-
-        self.running = True
-        self.person_running = False
-
-        self.load_main_screen()
-        for widget in self.winfo_children():
-            print(widget)
-        
-if __name__ == "__main__":
-    app = ThariBakhoorApp()
-    app.mainloop()
-    # SAFE MODE PAGE BUTTONS: ensure styling for Exit/Back buttons in safe mode
-    # If you have a method like show_safe_mode_screen or similar, ensure buttons are styled as follows:
-    # tk.Button(..., bg="#3d2d22", fg="#f4e9e1", activebackground="#3d2d22", activeforeground="#f4e9e1")
