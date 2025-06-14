@@ -698,7 +698,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(pady=20)
+        # Center the Safe Mode button in the middle of the frame
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1133,7 +1134,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(pady=20)
+        # Center the Safe Mode button in the middle of the frame
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1349,7 +1351,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(pady=20)
+        # Center the Safe Mode button in the middle of the frame
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
