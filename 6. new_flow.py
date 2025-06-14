@@ -561,9 +561,17 @@ class ThariBakhoorApp(tk.Tk):
         self.selected_clothes_heat_level = level
         for i, (lvl, _) in enumerate(self.clothes_heat_levels):
             if lvl == level:
-                self.clothes_heat_buttons[i].config(relief="sunken", bg=self.selected_btn_bg)
+                self.clothes_heat_buttons[i].config(
+                    relief="sunken",
+                    bg=self.selected_btn_bg,
+                    activebackground=self.selected_btn_bg
+                )
             else:
-                self.clothes_heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
+                self.clothes_heat_buttons[i].config(
+                    relief="raised",
+                    bg=self.default_btn_bg,
+                    activebackground=self.default_btn_bg
+                )
         self.set_clothes_heat_params_from_level(level)
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
@@ -595,9 +603,17 @@ class ThariBakhoorApp(tk.Tk):
         self.selected_clothes_speed_value = idx + 1
         for i, btn in enumerate(self.clothes_speed_buttons):
             if i == idx:
-                btn.config(relief="sunken", bg=self.selected_btn_bg)
+                btn.config(
+                    relief="sunken",
+                    bg=self.selected_btn_bg,
+                    activebackground=self.selected_btn_bg
+                )
             else:
-                btn.config(relief="raised", bg=self.default_btn_bg)
+                btn.config(
+                    relief="raised",
+                    bg=self.default_btn_bg,
+                    activebackground=self.default_btn_bg
+                )
         self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
