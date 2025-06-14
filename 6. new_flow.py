@@ -1142,6 +1142,11 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.surrounding_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.surrounding_mode_frame.pack(fill="both", expand=True)
+        # Configure grid to center content
+        self.surrounding_mode_frame.grid_rowconfigure(0, weight=1)
+        self.surrounding_mode_frame.grid_rowconfigure(3, weight=1)
+        self.surrounding_mode_frame.grid_columnconfigure(0, weight=1)
+
         self.surrounding_mode_label = tk.Label(
             self.surrounding_mode_frame,
             text="Starting Surrounding Mode...",
@@ -1149,8 +1154,8 @@ class ThariBakhoorApp(tk.Tk):
             bg="#f4e9e1",
             height=4
         )
-        # self.surrounding_mode_label.pack(pady=40)
-        self.surrounding_mode_label.place(relx=.5, rely=0.55, anchor="center")
+        # Center status label in row 1
+        self.surrounding_mode_label.grid(row=1, column=0, pady=(0, 5))
 
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
@@ -1166,12 +1171,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.45, anchor="center")
-        # Ensure the surrounding mode label appears above the button
-        # self.surrounding_mode_label.lift()
-        # Send the Safe Mode button directly beneath the surrounding_mode_label
-        # safe_button.lower(self.surrounding_mode_label)
+        # Center Safe Mode button in row 2
+        safe_button.grid(row=2, column=0, pady=(5, 0))
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1404,7 +1405,7 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center Safe Mode button in row 2
-        safe_button.grid(row=2, column=0, pady=(0, 0)) # 5, 0
+        safe_button.grid(row=2, column=0, pady=(5, 0)) # 5, 0
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
