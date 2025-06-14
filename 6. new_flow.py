@@ -689,6 +689,10 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.clothes_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.clothes_mode_frame.pack(fill="both", expand=True)
+        # Configure grid to center content
+        self.clothes_mode_frame.grid_rowconfigure(0, weight=1)
+        self.clothes_mode_frame.grid_rowconfigure(3, weight=1)
+        self.clothes_mode_frame.grid_columnconfigure(0, weight=1)
 
         # Section label for process
         self.clothes_mode_label = tk.Label(
@@ -698,8 +702,9 @@ class ThariBakhoorApp(tk.Tk):
             bg="#f4e9e1",
             height=4
         )
-        # self.clothes_mode_label.pack(pady=40)
-        self.clothes_mode_label.place(relx=0.5, rely=0.3, anchor="center")
+        # Center status label in row 1
+        self.clothes_mode_label.grid(row=1, column=0, pady=(0, 5))
+
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
             self.clothes_mode_frame,
@@ -714,12 +719,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.6, anchor="center")
-        # Ensure the clothes mode label appears above the button
-        # self.clothes_mode_label.lift()
-        # Send the Safe Mode button directly beneath the clothes_mode_label
-        # safe_button.lower(self.clothes_mode_label)
+        # Center Safe Mode button in row 2
+        safe_button.grid(row=2, column=0, pady=(5, 0))
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -874,9 +875,8 @@ class ThariBakhoorApp(tk.Tk):
             self.clothes_mode_label.config(
                 text=message,
                 font=("DM Sans", 12),
-                height = 4
+                height=4
             )
-        self.clothes_mode_label.place_configure(relx=0.5, rely=0.3, anchor="center")
 
 
     def show_surrounding_screen(self):
