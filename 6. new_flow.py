@@ -1389,12 +1389,12 @@ class ThariBakhoorApp(tk.Tk):
         # Center status label in row 1
         self.person_mode_label.grid(row=1, column=0, pady=(0, 5))
 
-        # Safe Mode button lower on screen (make as thin as possible)
+        # Safe Mode button lower on screen (height increased to 2)
         safe_button = tk.Button(
             self.person_mode_frame,
             text="Safe Mode",
             width=10,
-            height=1,  # Make button one text-line tall
+            height=2,  # Increase button height to 2 lines
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             padx=0, pady=0,  # Remove extra internal padding
