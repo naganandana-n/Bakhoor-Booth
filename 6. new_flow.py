@@ -1142,7 +1142,7 @@ class ThariBakhoorApp(tk.Tk):
             height=4
         )
         # self.surrounding_mode_label.pack(pady=40)
-        self.surrounding_mode_label.place(relx=.5, rely=0.3, anchor="center")
+        self.surrounding_mode_label.place(relx=.5, rely=0.55, anchor="center")
 
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
@@ -1159,7 +1159,7 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.6, anchor="center")
+        safe_button.place(relx=0.5, rely=0.45, anchor="center")
         # Ensure the surrounding mode label appears above the button
         # self.surrounding_mode_label.lift()
         # Send the Safe Mode button directly beneath the surrounding_mode_label
