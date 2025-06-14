@@ -1373,6 +1373,11 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
+        # Configure grid rows/columns to center the button and label
+        self.person_mode_frame.grid_rowconfigure(0, weight=1)
+        self.person_mode_frame.grid_rowconfigure(3, weight=1)
+        self.person_mode_frame.grid_columnconfigure(0, weight=1)
+
         # Centered Safe Mode button, styled to match clothes mode button
         safe_button = tk.Button(
             self.person_mode_frame,
@@ -1387,8 +1392,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Display Safe Mode button centered in the frame
-        safe_button.pack(expand=True)
+        # Place Safe Mode button in row 1, centered
+        safe_button.grid(row=1, column=0, pady=(0, 10))
         self.person_mode_label = tk.Label(
             self.person_mode_frame,
             text="Starting Person Mode...",
@@ -1396,8 +1401,8 @@ class ThariBakhoorApp(tk.Tk):
             bg="#f4e9e1",
             height=4
         )
-        # Show status text beneath the button
-        self.person_mode_label.pack()
+        # Place status label in row 2, centered
+        self.person_mode_label.grid(row=2, column=0)
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
