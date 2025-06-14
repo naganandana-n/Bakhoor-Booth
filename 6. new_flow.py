@@ -2836,8 +2836,6 @@ class ThariBakhoorApp(tk.Tk):
 
 
             )
-            self.person_mode_label.place_configure(relx=0.5, rely=0.3, anchor="center")
-
 
     
 
