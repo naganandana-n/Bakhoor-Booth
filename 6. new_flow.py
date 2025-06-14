@@ -526,6 +526,7 @@ class ThariBakhoorApp(tk.Tk):
             command=self.start_clothes_mode_sequence,
             font=("DM Sans", 12),
             bg="#3d2d22",
+            height = 2,
             fg="#f4e9e1",
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
@@ -540,6 +541,7 @@ class ThariBakhoorApp(tk.Tk):
             font=("DM Sans", 12),
             padx=10, pady=3,
             bg="#3d2d22",
+            height = 2,
             fg="#f4e9e1",
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
@@ -557,6 +559,7 @@ class ThariBakhoorApp(tk.Tk):
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
             bg="#3d2d22",
+            height = 2,
             fg="#f4e9e1",
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
@@ -974,6 +977,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Start",
             command=self.start_surrounding_mode_sequence,
             font=("DM Sans", 12),
+            height = 2,
             bg=self.default_btn_bg,
             fg="#f4e9e1",
             activebackground=self.default_btn_bg,
@@ -987,6 +991,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Safe Mode",
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
+            height = 2,
             bg=self.default_btn_bg,
             fg="#f4e9e1",
             activebackground=self.default_btn_bg,
@@ -1001,6 +1006,7 @@ class ThariBakhoorApp(tk.Tk):
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
             bg=self.default_btn_bg,
+            height = 2,
             fg="#f4e9e1",
             activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
@@ -1862,6 +1868,7 @@ class ThariBakhoorApp(tk.Tk):
         save_button = tk.Button(
             self.button_panel_frame,
             text="Start",
+            height = 2,
             command=self.save_values if ENABLE_HARDWARE else self.custom_save_values,
             font=("DM Sans", 12),
             bg="#3d2d22",
@@ -1875,6 +1882,7 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
+            height = 2,
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
             bg="#3d2d22",
@@ -1888,6 +1896,7 @@ class ThariBakhoorApp(tk.Tk):
         close_button = tk.Button(
             self.button_panel_frame,
             text="Close",
+            height = 2,
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
             bg="#3d2d22",
