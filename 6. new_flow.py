@@ -1395,9 +1395,9 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button vertically
-        safe_button.pack(expand=True, pady=(0, 120))
+        safe_button.pack(expand=True, pady=(0, 10))
         # Place the status label directly below the button
-        self.person_mode_label.pack(pady=(10, 0))
+        self.person_mode_label.pack(pady=(100, 0))
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
