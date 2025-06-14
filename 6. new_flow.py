@@ -705,15 +705,15 @@ class ThariBakhoorApp(tk.Tk):
         # Center status label in row 1
         self.clothes_mode_label.grid(row=1, column=0, pady=(0, 5))
 
-        # Centered Safe Mode button, styled to match other buttons
+        # Safe Mode button - styled and placed to match Person Mode
         safe_button = tk.Button(
             self.clothes_mode_frame,
             text="Safe Mode",
             width=10,
-            height=3,
+            height=2,
             command=self.activate_safe_mode,
-            font=("DM Sans", 18),
-            padx=20, pady=10,
+            font=("DM Sans", 12),
+            padx=0, pady=0,
             bg="#3d2d22",
             fg="#f4e9e1",
             activebackground="#3d2d22",
