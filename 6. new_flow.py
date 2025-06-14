@@ -1387,8 +1387,8 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Position Safe Mode button under the date/time area
-        safe_button.place(relx=0.5, rely=0.3, anchor="center")
+        # Display Safe Mode button centered in the frame
+        safe_button.pack(expand=True)
         self.person_mode_label = tk.Label(
             self.person_mode_frame,
             text="Starting Person Mode...",
@@ -1396,8 +1396,8 @@ class ThariBakhoorApp(tk.Tk):
             bg="#f4e9e1",
             height=4
         )
-        # Position status text just below the Safe Mode button
-        self.person_mode_label.place(relx=0.5, rely=0.35, anchor="n")
+        # Show status text beneath the button
+        self.person_mode_label.pack()
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
