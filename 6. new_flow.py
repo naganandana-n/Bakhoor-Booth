@@ -343,6 +343,8 @@ class ThariBakhoorApp(tk.Tk):
                 self.heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_heat_params_from_level(level)
         self.update_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration (person mode)
@@ -372,6 +374,8 @@ class ThariBakhoorApp(tk.Tk):
                 btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_speed_param_from_value(self.selected_speed_value)
         self.update_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -538,6 +542,8 @@ class ThariBakhoorApp(tk.Tk):
                 self.clothes_heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_clothes_heat_params_from_level(level)
         self.update_clothes_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_clothes_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration
@@ -567,6 +573,8 @@ class ThariBakhoorApp(tk.Tk):
                 btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
         self.update_clothes_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_clothes_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -953,6 +961,8 @@ class ThariBakhoorApp(tk.Tk):
                 self.surrounding_heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_surrounding_heat_params_from_level(level)
         self.update_surrounding_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_surrounding_heat_params_from_level(self, level):
         if level == "Low":
@@ -981,6 +991,8 @@ class ThariBakhoorApp(tk.Tk):
                 btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_surrounding_speed_param_from_value(self.selected_surrounding_speed_value)
         self.update_surrounding_time_record_label()
+        # Force immediate UI update so the selected color appears instantly
+        self.update_idletasks()
 
     def set_surrounding_speed_param_from_value(self, value):
         # value: 1, 2, 3 (index+1)
