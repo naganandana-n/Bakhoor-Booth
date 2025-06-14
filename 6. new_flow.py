@@ -1380,7 +1380,6 @@ class ThariBakhoorApp(tk.Tk):
             text="Starting Person Mode...",
             font=("DM Sans", 12),    # smaller font
             bg="#f4e9e1",
-            height=4
         )
         # Position status text above the button
         self.person_mode_label.place(relx=0.5, rely=0.3, anchor="center")
