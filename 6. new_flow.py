@@ -1152,7 +1152,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Starting Surrounding Mode...",
             font=("DM Sans", 16),
             bg="#f4e9e1",
-            height=4
+            height=1
         )
         # Center status label in row 1
         self.surrounding_mode_label.grid(row=1, column=0, pady=(0, 5))
@@ -1302,7 +1302,7 @@ class ThariBakhoorApp(tk.Tk):
             self.surrounding_mode_label.config(
                 text=message,
                 font=("DM Sans", 12),
-                height = 4
+                height=1
             )
         # self.surrounding_mode_label.place_configure(relx=0.5, rely=0.3, anchor="center")
     def save_values(self):
