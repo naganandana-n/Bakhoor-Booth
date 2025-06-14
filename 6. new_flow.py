@@ -1380,8 +1380,6 @@ class ThariBakhoorApp(tk.Tk):
             bg="#f4e9e1",
             height=4
         )
-        # self.person_mode_label.pack(pady=40)
-        self.person_mode_label.place(relx=0.5, rely=0.3, anchor="center")
         # Centered Safe Mode button, styled to match clothes mode button
         safe_button = tk.Button(
             self.person_mode_frame,
@@ -1396,13 +1394,10 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.6, anchor="center")
-        # Ensure the person mode label appears above the button
-        # self.person_mode_label.lift()
-        # Send the Safe Mode button behind other widgets so the label remains visible
-        # safe_button.lower()
-        # safe_button.lower(self.person_mode_label)
+        # Center the Safe Mode button vertically in the frame
+        safe_button.pack(expand=True, pady=(0, 10))
+        # Place the status label directly below the button
+        self.person_mode_label.pack(pady=(10, 0))
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
