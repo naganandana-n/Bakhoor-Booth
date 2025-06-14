@@ -106,6 +106,10 @@ class ThariBakhoorApp(tk.Tk):
         self.load_main_screen()
 
     def load_main_screen(self):
+        # Clear any existing main screen to prevent duplicate screens
+        if hasattr(self, "main_frame") and self.main_frame.winfo_exists():
+            self.main_frame.destroy()
+
         # Stops all the fans
         if ENABLE_HARDWARE:
             GPIO.output(self.fan_gpio_pin, GPIO.LOW)
