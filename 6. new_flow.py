@@ -702,6 +702,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
         # Ensure the clothes mode label appears above the button
         self.clothes_mode_label.lift()
+        # Send the Safe Mode button behind other widgets so the label remains visible
+        safe_button.lower()
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1140,6 +1142,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
         # Ensure the surrounding mode label appears above the button
         self.surrounding_mode_label.lift()
+        # Send the Safe Mode button behind other widgets so the label remains visible
+        safe_button.lower()
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1359,6 +1363,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
         # Ensure the person mode label appears above the button
         self.person_mode_label.lift()
+        # Send the Safe Mode button behind other widgets so the label remains visible
+        safe_button.lower()
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
