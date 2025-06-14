@@ -726,6 +726,10 @@ class ThariBakhoorApp(tk.Tk):
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
 
     def _clothes_mode_flow(self):
+        # Start fan at 10% PWM when clothes mode begins
+        if ENABLE_HARDWARE:
+            self._set_fan_pwm(10)
+        fan_pwm_25_set = False
         # Implements the new clothes mode logic with weight check and prompts.
         x = getattr(self, "clothes_x_seconds", 120)
         y = getattr(self, "clothes_y_seconds", 30)
@@ -783,6 +787,10 @@ class ThariBakhoorApp(tk.Tk):
             if elapsed >= x:
                 break
             seconds_left = max(0, x - elapsed)
+            # After 30s, bump fan PWM to 25%
+            if ENABLE_HARDWARE and not fan_pwm_25_set and elapsed >= 30:
+                self._set_fan_pwm(25)
+                fan_pwm_25_set = True
             self._update_clothes_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
@@ -790,7 +798,7 @@ class ThariBakhoorApp(tk.Tk):
         self._update_clothes_mode_label("Preheat done. Starting main heat cycle.")
         time.sleep(1)
 
-        # After X seconds, turn on fan at 25% PWM
+        # After X seconds, turn on fan at 25% PWM (redundant if already set above, but preserve logic)
         if ENABLE_HARDWARE:
             self._set_fan_pwm(25)
 
