@@ -688,7 +688,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.clothes_mode_frame,
             text="Safe Mode",
-            height=2,
+            width=10,
+            height=3,
             command=self.activate_safe_mode,
             font=("DM Sans", 18),
             padx=20, pady=10,
@@ -697,7 +698,7 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(side="bottom", fill="x", pady=10)
+        safe_button.pack(pady=20)
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1122,7 +1123,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.surrounding_mode_frame,
             text="Safe Mode",
-            height=2,
+            width=10,
+            height=3,
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             padx=20, pady=10,
@@ -1131,7 +1133,7 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(side="bottom", fill="x", pady=10)
+        safe_button.pack(pady=20)
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1337,6 +1339,8 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.person_mode_frame,
             text="Safe Mode",
+            width=10,
+            height=3,
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             padx=20, pady=10,
@@ -1345,7 +1349,7 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        safe_button.pack(side="bottom", fill="x", pady=10)
+        safe_button.pack(pady=20)
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
