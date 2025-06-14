@@ -231,13 +231,13 @@ class ThariBakhoorApp(tk.Tk):
         
 
         # HEAT CONTROL (3 bars: Low, Medium, High)
-        self.heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
+        self.heat_levels = [("Low", ""), ("Medium", ""), ("High", "")]
         self.heat_buttons = []
         self.selected_heat_level = "Medium"  # Default selection
         for i, (level, label) in enumerate(self.heat_levels):
             btn = tk.Button(
                 self.heat_frame,
-                text=f"{level}\n{label}",
+                text=level,
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if level == self.selected_heat_level else "raised",
@@ -252,14 +252,14 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial heat parameters for default
         self.set_heat_params_from_level(self.selected_heat_level)
 
-        # SPEED CONTROL (3 bars: 1, 2, 3)
-        self.speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        # SPEED CONTROL (3 bars: 3, 4, 5 minutes)
+        self.speed_levels = [("3 minutes", ""), ("4 minutes", ""), ("5 minutes", "")]
         self.speed_buttons = []
         self.selected_speed_value = 2  # Default selection is 2 (index=1)
         for i, (level, label) in enumerate(self.speed_levels):
             btn = tk.Button(
                 self.speed_frame,
-                text=f"{level}\n{label}",
+                text=level,
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if i == self.selected_speed_value - 1 else "raised",
@@ -417,13 +417,13 @@ class ThariBakhoorApp(tk.Tk):
         time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
         # HEAT CONTROL (3 bars: Low, Medium, High)
-        self.clothes_heat_levels = [("Low", "110s+25s (2min)"), ("Medium", "120s+30s (2:10min)"), ("High", "130s+35s (2:20min)")]
+        self.clothes_heat_levels = [("Low", ""), ("Medium", ""), ("High", "")]
         self.clothes_heat_buttons = []
         self.selected_clothes_heat_level = "Medium"  # Default selection
         for i, (level, label) in enumerate(self.clothes_heat_levels):
             btn = tk.Button(
                 self.heat_frame,
-                text=f"{level}\n{label}",
+                text=level,
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if level == self.selected_clothes_heat_level else "raised",
@@ -438,14 +438,14 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial heat parameters for default
         self.set_clothes_heat_params_from_level(self.selected_clothes_heat_level)
 
-        # SPEED CONTROL (3 bars: 1, 2, 3)
-        self.clothes_speed_levels = [("1", "150s"), ("2", "300s"), ("3", "480s")]
+        # SPEED CONTROL (3 bars: 3, 4, 5 minutes)
+        self.clothes_speed_levels = [("3 minutes", ""), ("4 minutes", ""), ("5 minutes", "")]
         self.clothes_speed_buttons = []
         self.selected_clothes_speed_value = 2  # Default selection is 2 (index=1)
         for i, (level, label) in enumerate(self.clothes_speed_levels):
             btn = tk.Button(
                 self.speed_frame,
-                text=f"{level}\n{label}",
+                text=level,
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if i == self.selected_clothes_speed_value - 1 else "raised",
