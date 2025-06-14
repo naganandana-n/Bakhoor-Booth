@@ -317,6 +317,7 @@ class ThariBakhoorApp(tk.Tk):
         save_button = tk.Button(
             self.button_panel_frame,
             text="Start",
+            height = 2,
             command=self.save_values,
             font=("DM Sans", 12),
             bg=self.default_btn_bg,
@@ -330,6 +331,7 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
+            height = 2,
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
             bg=self.default_btn_bg,
@@ -343,6 +345,7 @@ class ThariBakhoorApp(tk.Tk):
         close_button = tk.Button(
             self.button_panel_frame,
             text="Close",
+            height = 2,
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
             bg=self.default_btn_bg,
