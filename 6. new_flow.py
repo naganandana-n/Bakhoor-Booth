@@ -240,7 +240,8 @@ class ThariBakhoorApp(tk.Tk):
         for i, (level, label) in enumerate(self.heat_levels):
             btn = tk.Button(
                 self.heat_frame,
-                text=level,
+                # text=level,
+                text=f"{level}",
                 font=("DM Sans", 12),
                 width=10,
                 relief="sunken" if level == self.selected_heat_level else "raised",
