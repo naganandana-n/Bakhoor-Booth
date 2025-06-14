@@ -1394,10 +1394,10 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Place Safe Mode button under the date/time, around 30% down the screen
+        # Place Safe Mode button under the date/time area (approx 30% down)
         safe_button.place(relx=0.5, rely=0.3, anchor="center")
-        # Place the status label immediately below the button
-        self.person_mode_label.place(relx=0.5, rely=0.4, anchor="center")
+        # Place status label right below the button, anchoring top to avoid overlap
+        self.person_mode_label.place(relx=0.5, rely=0.32, anchor="n")
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
