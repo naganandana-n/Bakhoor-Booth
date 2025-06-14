@@ -1379,7 +1379,7 @@ class ThariBakhoorApp(tk.Tk):
             self.person_mode_frame,
             text="Safe Mode",
             width=10,
-            height=3,
+            height=2,
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             padx=20, pady=10,
