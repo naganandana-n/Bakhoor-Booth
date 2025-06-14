@@ -1304,7 +1304,7 @@ class ThariBakhoorApp(tk.Tk):
                 font=("DM Sans", 12),
                 height = 4
             )
-        self.surrounding_mode_label.place_configure(relx=0.5, rely=0.3, anchor="center")
+        # self.surrounding_mode_label.place_configure(relx=0.5, rely=0.3, anchor="center")
     def save_values(self):
         # Notes down the time at when the process starts
         self.saved_time = time.time()
