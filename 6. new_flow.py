@@ -1404,7 +1404,7 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center Safe Mode button in row 2
-        safe_button.grid(row=2, column=0, pady=(5, 0))
+        safe_button.grid(row=2, column=0, pady=(0, 0)) # 5, 0
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
