@@ -682,8 +682,8 @@ class ThariBakhoorApp(tk.Tk):
 
         # Section label for process
         self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
-        self.clothes_mode_label.pack(pady=40)
-
+        # self.clothes_mode_label.pack(pady=40)
+        self.clothes_mode_label.place(relx=0.5, rely=0.3, anchor="center")
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
             self.clothes_mode_frame,
@@ -699,12 +699,11 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        safe_button.place(relx=0.5, rely=0.6, anchor="center")
         # Ensure the clothes mode label appears above the button
-        self.clothes_mode_label.lift()
-        # Send the Safe Mode button behind other widgets so the label remains visible
-        # safe_button.lower()
-        safe_button.lower(self.person_mode_label)
+        # self.clothes_mode_label.lift()
+        # Send the Safe Mode button directly beneath the clothes_mode_label
+        # safe_button.lower(self.clothes_mode_label)
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1123,7 +1122,8 @@ class ThariBakhoorApp(tk.Tk):
         self.surrounding_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.surrounding_mode_frame.pack(fill="both", expand=True)
         self.surrounding_mode_label = tk.Label(self.surrounding_mode_frame, text="Starting Surrounding Mode...", font=("DM Sans", 16), bg="#f4e9e1")
-        self.surrounding_mode_label.pack(pady=40)
+        # self.surrounding_mode_label.pack(pady=40)
+        self.surrounding_mode_label.place(relx=0.5, rely=0.3, anchor="center")
 
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
@@ -1140,12 +1140,11 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        safe_button.place(relx=0.5, rely=0.6, anchor="center")
         # Ensure the surrounding mode label appears above the button
-        self.surrounding_mode_label.lift()
-        # Send the Safe Mode button behind other widgets so the label remains visible
-        # safe_button.lower()
-        safe_button.lower(self.person_mode_label)
+        # self.surrounding_mode_label.lift()
+        # Send the Safe Mode button directly beneath the surrounding_mode_label
+        # safe_button.lower(self.surrounding_mode_label)
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1346,7 +1345,8 @@ class ThariBakhoorApp(tk.Tk):
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
         self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
-        self.person_mode_label.pack(pady=40)
+        # self.person_mode_label.pack(pady=40)
+        self.person_mode_label.place(relx=0.5, rely=0.3, anchor="center")
         # Centered Safe Mode button, styled to match clothes mode button
         safe_button = tk.Button(
             self.person_mode_frame,
@@ -1362,12 +1362,12 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        safe_button.place(relx=0.5, rely=0.6, anchor="center")
         # Ensure the person mode label appears above the button
-        self.person_mode_label.lift()
+        # self.person_mode_label.lift()
         # Send the Safe Mode button behind other widgets so the label remains visible
         # safe_button.lower()
-        safe_button.lower(self.person_mode_label)
+        # safe_button.lower(self.person_mode_label)
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
