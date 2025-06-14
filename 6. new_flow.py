@@ -1402,15 +1402,6 @@ class ThariBakhoorApp(tk.Tk):
         # Safe Mode button lower on screen
         safe_button.place(relx=0.5, rely=0.6, anchor="center")
 
-        # Temporary debug text in the blank center area
-        hello_label = tk.Label(
-            self.person_mode_frame,
-            text="hello",
-            font=("DM Sans", 16),
-            bg="#f4e9e1"
-        )
-        hello_label.place(relx=0.5, rely=0.45, anchor="center")
-
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
@@ -2843,6 +2834,12 @@ class ThariBakhoorApp(tk.Tk):
                 height = 4
 
 
+            )
+        
+            self.person_mode_label.place_configure(
+            relx=0.5,
+            rely=0.58,
+            anchor="s"
             )
 
     
