@@ -293,11 +293,6 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial speed param
         self.set_speed_param_from_value(self.selected_speed_value)
 
-        # TIME CONTROL (show total time as per heat+speed)
-        # We'll update this label after both selections
-        self.time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
-        self.time_record.grid(row=1, column=1, sticky="w")
-        self.update_time_record_label()
 
 
         # Instructional message
@@ -502,10 +497,6 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial speed param
         self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
 
-        # TIME CONTROL (show total time as per heat+speed)
-        self.clothes_time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
-        self.clothes_time_record.grid(row=1, column=1, sticky="w")
-        self.update_clothes_time_record_label()
 
         # Instructional message
         instruction_label = tk.Label(
@@ -959,11 +950,6 @@ class ThariBakhoorApp(tk.Tk):
         # Set initial speed param
         self.set_surrounding_speed_param_from_value(self.selected_surrounding_speed_value)
 
-        # TIME CONTROL (show total time as per heat+speed)
-        # We'll update this label after both selections
-        self.surrounding_time_record = tk.Label(self.time_frame, text="", bg="#f4e9e1", font=("DM Sans", 12))
-        self.surrounding_time_record.grid(row=1, column=1, sticky="w")
-        self.update_surrounding_time_record_label()
 
         # Instructional message
         instruction_label = tk.Label(
