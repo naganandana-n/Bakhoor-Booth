@@ -579,6 +579,9 @@ class ThariBakhoorApp(tk.Tk):
         # Clear any lingering pressed state on touch screens
         for btn in getattr(self, "clothes_heat_buttons", []):
             btn.event_generate('<Leave>')
+        # Also simulate a button release to clear any sticky press state
+        for btn in getattr(self, "clothes_heat_buttons", []):
+            btn.event_generate('<ButtonRelease-1>')
 
     def set_clothes_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration
@@ -621,6 +624,9 @@ class ThariBakhoorApp(tk.Tk):
         # Clear any lingering pressed state on touch screens
         for btn in getattr(self, "clothes_speed_buttons", []):
             btn.event_generate('<Leave>')
+        # Also simulate a button release to clear any sticky press state
+        for btn in getattr(self, "clothes_speed_buttons", []):
+            btn.event_generate('<ButtonRelease-1>')
 
     def set_clothes_speed_param_from_value(self, value):
         # value: 1, 2, 3
