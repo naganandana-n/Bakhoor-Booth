@@ -700,6 +700,7 @@ class ThariBakhoorApp(tk.Tk):
         )
         # Center the Safe Mode button in the middle of the frame
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        self.surrounding_mode_label.lift()
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1136,6 +1137,7 @@ class ThariBakhoorApp(tk.Tk):
         )
         # Center the Safe Mode button in the middle of the frame
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        self.surrounding_mode_label.lift()
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1353,6 +1355,7 @@ class ThariBakhoorApp(tk.Tk):
         )
         # Center the Safe Mode button in the middle of the frame
         safe_button.place(relx=0.5, rely=0.5, anchor="center")
+        self.surrounding_mode_label.lift()
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
