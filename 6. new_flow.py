@@ -700,7 +700,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Starting Clothes Mode...",
             font=("DM Sans", 16),
             bg="#f4e9e1",
-            height=4
+            height=1
         )
         # Center status label in row 1
         self.clothes_mode_label.grid(row=1, column=0, pady=(0, 5))
