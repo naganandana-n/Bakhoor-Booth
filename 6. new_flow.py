@@ -2027,6 +2027,7 @@ class ThariBakhoorApp(tk.Tk):
 
 
         self.update_time()
+        self.pi.write(self.door_ssr_pin, 1)
 
 
     
