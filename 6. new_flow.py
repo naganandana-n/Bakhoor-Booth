@@ -742,7 +742,7 @@ class ThariBakhoorApp(tk.Tk):
 
         # 1. After clicking Start, check current weight
         weight = self._get_weight_value() if ENABLE_HARDWARE else 0
-        if weight < 5:
+        if weight < 10:
             # Chamber is empty, lock the door and start heating cycle
             self._update_clothes_mode_label("Chamber empty. Locking door and starting cycle.")
             if ENABLE_HARDWARE:
@@ -759,7 +759,7 @@ class ThariBakhoorApp(tk.Tk):
             self._update_clothes_mode_label("Waiting for chamber to be empty...")
             while True:
                 weight = self._get_weight_value() if ENABLE_HARDWARE else 0
-                if weight < 0:
+                if weight < 10:
                     break
                 self._update_clothes_mode_label("Weight detected. Please remove any objects and close the door.")
                 time.sleep(2)
@@ -1451,7 +1451,7 @@ class ThariBakhoorApp(tk.Tk):
             weight = self._get_weight_value()
             # If no entry (weight == 0), pause X timer after 15s
             if not entry_detected:
-                if weight < 0:
+                if weight < 10:
                     self._update_person_mode_label("Waiting for entry. Please enter the chamber.")
                     waited_while_zero += 1
                     if waited_while_zero >= 15:
