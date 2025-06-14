@@ -863,7 +863,8 @@ class ThariBakhoorApp(tk.Tk):
         if hasattr(self, "clothes_mode_label"):
             self.clothes_mode_label.config(
                 text=message,
-                font=("DM Sans", 12)
+                font=("DM Sans", 12),
+                height = 4
             )
 
 
@@ -1285,7 +1286,8 @@ class ThariBakhoorApp(tk.Tk):
         if hasattr(self, "surrounding_mode_label"):
             self.surrounding_mode_label.config(
                 text=message,
-                font=("DM Sans", 12)
+                font=("DM Sans", 12),
+                height = 4
             )
     def save_values(self):
         # Notes down the time at when the process starts
@@ -2811,7 +2813,8 @@ class ThariBakhoorApp(tk.Tk):
                 text=message,
 
 
-                font=("DM Sans", 12)
+                font=("DM Sans", 12),
+                height = 4
 
 
             )
