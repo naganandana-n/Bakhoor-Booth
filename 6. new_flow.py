@@ -325,6 +325,7 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.button_panel_frame,
             text="Safe Mode",
+            height=2,
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
             bg=self.default_btn_bg,
@@ -687,6 +688,7 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.clothes_mode_frame,
             text="Safe Mode",
+            height=2,
             command=self.activate_safe_mode,
             font=("DM Sans", 18),
             padx=20, pady=10,
@@ -1120,6 +1122,7 @@ class ThariBakhoorApp(tk.Tk):
         safe_button = tk.Button(
             self.surrounding_mode_frame,
             text="Safe Mode",
+            height=2,
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
             padx=20, pady=10,
