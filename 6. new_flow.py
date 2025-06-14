@@ -681,7 +681,13 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_mode_frame.pack(fill="both", expand=True)
 
         # Section label for process
-        self.clothes_mode_label = tk.Label(self.clothes_mode_frame, text="Starting Clothes Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.clothes_mode_label = tk.Label(
+            self.clothes_mode_frame,
+            text="Starting Clothes Mode...",
+            font=("DM Sans", 16),
+            bg="#f4e9e1",
+            height=4
+        )
         # self.clothes_mode_label.pack(pady=40)
         self.clothes_mode_label.place(relx=0.5, rely=0.3, anchor="center")
         # Centered Safe Mode button, styled to match other buttons
@@ -1121,9 +1127,15 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.surrounding_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.surrounding_mode_frame.pack(fill="both", expand=True)
-        self.surrounding_mode_label = tk.Label(self.surrounding_mode_frame, text="Starting Surrounding Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.surrounding_mode_label = tk.Label(
+            self.surrounding_mode_frame,
+            text="Starting Surrounding Mode...",
+            font=("DM Sans", 16),
+            bg="#f4e9e1",
+            height=4
+        )
         # self.surrounding_mode_label.pack(pady=40)
-        self.surrounding_mode_label.place(relx=0.5, rely=0.3, anchor="center")
+        self.surrounding_mode_label.place(relx=.5, rely=0.3, anchor="center")
 
         # Centered Safe Mode button, styled to match other buttons
         safe_button = tk.Button(
@@ -1344,7 +1356,13 @@ class ThariBakhoorApp(tk.Tk):
         # Show a new frame for the sequence
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
-        self.person_mode_label = tk.Label(self.person_mode_frame, text="Starting Person Mode...", font=("DM Sans", 16), bg="#f4e9e1")
+        self.person_mode_label = tk.Label(
+            self.person_mode_frame,
+            text="Starting Person Mode...",
+            font=("DM Sans", 16),
+            bg="#f4e9e1",
+            height=4
+        )
         # self.person_mode_label.pack(pady=40)
         self.person_mode_label.place(relx=0.5, rely=0.3, anchor="center")
         # Centered Safe Mode button, styled to match clothes mode button
