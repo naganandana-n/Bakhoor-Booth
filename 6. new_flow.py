@@ -1374,7 +1374,18 @@ class ThariBakhoorApp(tk.Tk):
         self.person_mode_frame = tk.Frame(self, bg="#f4e9e1")
         self.person_mode_frame.pack(fill="both", expand=True)
 
-        # Centered Safe Mode button, styled to match clothes mode button
+        # Status label appears above the button, smaller font and centered at 0.3
+        self.person_mode_label = tk.Label(
+            self.person_mode_frame,
+            text="Starting Person Mode...",
+            font=("DM Sans", 12),    # smaller font
+            bg="#f4e9e1",
+            height=4
+        )
+        # Position status text above the button
+        self.person_mode_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        # Safe Mode button lower on screen
         safe_button = tk.Button(
             self.person_mode_frame,
             text="Safe Mode",
@@ -1388,17 +1399,9 @@ class ThariBakhoorApp(tk.Tk):
             activebackground="#3d2d22",
             activeforeground="#f4e9e1"
         )
-        # Position Safe Mode button under the date/time area (~30% down)
-        safe_button.place(relx=0.5, rely=0.3, anchor="center")
-        self.person_mode_label = tk.Label(
-            self.person_mode_frame,
-            text="Starting Person Mode...",
-            font=("DM Sans", 16),
-            bg="#f4e9e1",
-            height=4
-        )
-        # Position status text just below the button (~36% down)
-        self.person_mode_label.place(relx=0.5, rely=0.36, anchor="n")
+        # Safe Mode button lower on screen
+        safe_button.place(relx=0.5, rely=0.6, anchor="center")
+
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
