@@ -94,9 +94,14 @@ class ThariBakhoorApp(tk.Tk):
 
         # Bind screen touch to continue
         self.bind("<Button-1>", self.on_splash_click)
-        self.after(120000, self.on_splash_click, None)  # fallback auto-continue
+        # Schedule a fallback auto-continue and store its ID so we can cancel it when clicked
+        self.splash_after_id = self.after(120000, self.on_splash_click, None)
 
     def on_splash_click(self, event):
+        # Cancel the splash timeout if it’s still pending
+        if hasattr(self, "splash_after_id"):
+            self.after_cancel(self.splash_after_id)
+            del self.splash_after_id
         # Lock the door for safety at splash click (before main menu)
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
