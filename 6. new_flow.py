@@ -250,6 +250,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, lvl=level: self.select_heat_level(lvl))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.heat_buttons.append(btn)
         # Set initial heat parameters for default
@@ -272,6 +274,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, idx=i: self.select_speed_level(idx))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.speed_buttons.append(btn)
 
@@ -446,6 +450,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, lvl=level: self.select_clothes_heat_level(lvl))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.clothes_heat_buttons.append(btn)
         # Set initial heat parameters for default
@@ -468,6 +474,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, idx=i: self.select_clothes_speed_level(idx))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.clothes_speed_buttons.append(btn)
 
@@ -867,6 +875,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, lvl=level: self.select_surrounding_heat_level(lvl))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.surrounding_heat_buttons.append(btn)
         # Set initial heat parameters for default
@@ -891,6 +901,8 @@ class ThariBakhoorApp(tk.Tk):
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
+            # Bind press so selection happens immediately on touch
+            btn.bind("<ButtonPress-1>", lambda e, idx=i: self.select_surrounding_speed_level(idx))
             btn.grid(row=1, column=i, padx=10, pady=5)
             self.surrounding_speed_buttons.append(btn)
 
