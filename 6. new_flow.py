@@ -54,7 +54,7 @@ class ThariBakhoorApp(tk.Tk):
         self.configure(bg="#f4e9e1")  # Set background color for the entire application
         # Button color scheme
         self.default_btn_bg = "#3d2d22"
-        self.selected_btn_bg = "#5f4b3a"
+        self.selected_btn_bg = "#8B5742"
          # Define the hexadecimal color code
         self.custom_color = "#3e2d25"  # Replace this with your desired color code
         # Initialize the style
