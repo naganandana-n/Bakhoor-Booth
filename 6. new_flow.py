@@ -349,8 +349,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "heat_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration (person mode)
@@ -382,8 +383,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "speed_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -556,8 +558,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "clothes_heat_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_clothes_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration
@@ -589,8 +592,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "clothes_speed_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_clothes_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -983,8 +987,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_surrounding_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "surrounding_heat_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_surrounding_heat_params_from_level(self, level):
         if level == "Low":
@@ -1015,8 +1020,9 @@ class ThariBakhoorApp(tk.Tk):
         self.update_surrounding_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate a release on the background to clear touch state
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
+        # Clear any lingering pressed state on touch screens
+        for btn in getattr(self, "surrounding_speed_buttons", []):
+            btn.event_generate('<Leave>')
 
     def set_surrounding_speed_param_from_value(self, value):
         # value: 1, 2, 3 (index+1)
