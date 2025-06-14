@@ -451,6 +451,7 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_heat_buttons = []
         self.selected_clothes_heat_level = "Medium"  # Default selection
         for i, (level, label) in enumerate(self.clothes_heat_levels):
+            btn_bg = self.selected_btn_bg if level == self.selected_clothes_heat_level else self.default_btn_bg
             btn = tk.Button(
                 self.heat_frame,
                 text=level,
@@ -459,7 +460,7 @@ class ThariBakhoorApp(tk.Tk):
                 height=3,
                 relief="sunken" if level == self.selected_clothes_heat_level else "raised",
                 command=lambda lvl=level: self.select_clothes_heat_level(lvl),
-                bg=self.default_btn_bg,
+                bg=btn_bg,
                 fg="#f4e9e1",
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
@@ -476,6 +477,7 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_speed_buttons = []
         self.selected_clothes_speed_value = 2  # Default selection is 2 (index=1)
         for i, (level, label) in enumerate(self.clothes_speed_levels):
+            btn_bg = self.selected_btn_bg if i == self.selected_clothes_speed_value - 1 else self.default_btn_bg
             btn = tk.Button(
                 self.speed_frame,
                 text=level,
@@ -484,7 +486,7 @@ class ThariBakhoorApp(tk.Tk):
                 height=3,
                 relief="sunken" if i == self.selected_clothes_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_clothes_speed_level(idx),
-                bg=self.default_btn_bg,
+                bg=btn_bg,
                 fg="#f4e9e1",
                 activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
