@@ -239,9 +239,6 @@ class ThariBakhoorApp(tk.Tk):
         heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         speed_label.grid(row=0, columnspan=3, pady=(0, 10))
-        time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        
-        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
         
 
@@ -453,8 +450,6 @@ class ThariBakhoorApp(tk.Tk):
         heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         speed_label.grid(row=0, columnspan=3, pady=(0, 10))
-        time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
         # HEAT CONTROL (3 bars: Low, Medium, High)
         self.clothes_heat_levels = [("Low", ""), ("Medium", ""), ("High", "")]
@@ -910,8 +905,6 @@ class ThariBakhoorApp(tk.Tk):
         heat_label.grid(row=0, columnspan=3, pady=(0, 10))
         speed_label = tk.Label(self.speed_frame, text="Speed Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
         speed_label.grid(row=0, columnspan=3, pady=(0, 10))
-        time_label = tk.Label(self.time_frame, text="Time Control", bg="#f4e9e1", font=("DM Sans", 12, "bold"))
-        time_label.grid(row=0, columnspan=3, pady=(0, 10))
 
         # HEAT CONTROL (3 bars: Low, Medium, High)
         # Remove time details from button text
