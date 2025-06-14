@@ -1385,7 +1385,7 @@ class ThariBakhoorApp(tk.Tk):
             text="Starting Person Mode...",
             font=("DM Sans", 12),    # smaller font
             bg="#f4e9e1",
-            height=4
+            height=1
         )
         # Center status label in row 1
         self.person_mode_label.grid(row=1, column=0, pady=(0, 5))
