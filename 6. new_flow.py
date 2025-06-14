@@ -52,6 +52,9 @@ class ThariBakhoorApp(tk.Tk):
         self.bind("<Escape>", lambda e: self.destroy())
 
         self.configure(bg="#f4e9e1")  # Set background color for the entire application
+        # Button color scheme
+        self.default_btn_bg = "#3d2d22"
+        self.selected_btn_bg = "#5f4b3a"
          # Define the hexadecimal color code
         self.custom_color = "#3e2d25"  # Replace this with your desired color code
         # Initialize the style
@@ -168,9 +171,9 @@ class ThariBakhoorApp(tk.Tk):
             command=self.show_person_screen,
             width=10,
             font=("DM Sans", 14),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         self.person_button.grid(row=0, column=0, padx=10)
@@ -181,9 +184,9 @@ class ThariBakhoorApp(tk.Tk):
             command=self.show_clothes_screen,
             width=10,
             font=("DM Sans", 14),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         self.clothes_button.grid(row=0, column=1, padx=10)
@@ -194,9 +197,9 @@ class ThariBakhoorApp(tk.Tk):
             command=self.show_surrounding_screen,
             width=10,
             font=("DM Sans", 14),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         self.surrounding_button.grid(row=0, column=2, padx=10)
@@ -242,9 +245,9 @@ class ThariBakhoorApp(tk.Tk):
                 width=10,
                 relief="sunken" if level == self.selected_heat_level else "raised",
                 command=lambda lvl=level: self.select_heat_level(lvl),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -264,9 +267,9 @@ class ThariBakhoorApp(tk.Tk):
                 width=10,
                 relief="sunken" if i == self.selected_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_speed_level(idx),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -298,9 +301,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Start",
             command=self.save_values,
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0)) # Place the Save button on the left
@@ -311,9 +314,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Safe Mode",
             command=self.activate_safe_mode,  # You can define this function
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
@@ -324,9 +327,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Close",
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))  # Place the Close button on the right
@@ -334,7 +337,10 @@ class ThariBakhoorApp(tk.Tk):
     def select_heat_level(self, level):
         self.selected_heat_level = level
         for i, (lvl, _) in enumerate(self.heat_levels):
-            self.heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+            if lvl == level:
+                self.heat_buttons[i].config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                self.heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_heat_params_from_level(level)
         self.update_time_record_label()
 
@@ -359,8 +365,11 @@ class ThariBakhoorApp(tk.Tk):
 
     def select_speed_level(self, idx):
         self.selected_speed_value = idx + 1
-        for i in range(len(self.speed_buttons)):
-            self.speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        for i, btn in enumerate(self.speed_buttons):
+            if i == idx:
+                btn.config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_speed_param_from_value(self.selected_speed_value)
         self.update_time_record_label()
 
@@ -428,9 +437,9 @@ class ThariBakhoorApp(tk.Tk):
                 width=10,
                 relief="sunken" if level == self.selected_clothes_heat_level else "raised",
                 command=lambda lvl=level: self.select_clothes_heat_level(lvl),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -450,9 +459,9 @@ class ThariBakhoorApp(tk.Tk):
                 width=10,
                 relief="sunken" if i == self.selected_clothes_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_clothes_speed_level(idx),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -523,7 +532,10 @@ class ThariBakhoorApp(tk.Tk):
     def select_clothes_heat_level(self, level):
         self.selected_clothes_heat_level = level
         for i, (lvl, _) in enumerate(self.clothes_heat_levels):
-            self.clothes_heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+            if lvl == level:
+                self.clothes_heat_buttons[i].config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                self.clothes_heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_clothes_heat_params_from_level(level)
         self.update_clothes_time_record_label()
 
@@ -548,8 +560,11 @@ class ThariBakhoorApp(tk.Tk):
 
     def select_clothes_speed_level(self, idx):
         self.selected_clothes_speed_value = idx + 1
-        for i in range(len(self.clothes_speed_buttons)):
-            self.clothes_speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        for i, btn in enumerate(self.clothes_speed_buttons):
+            if i == idx:
+                btn.config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_clothes_speed_param_from_value(self.selected_clothes_speed_value)
         self.update_clothes_time_record_label()
 
@@ -839,9 +854,9 @@ class ThariBakhoorApp(tk.Tk):
                 height=3,
                 relief="sunken" if level == self.selected_surrounding_heat_level else "raised",
                 command=lambda lvl=level: self.select_surrounding_heat_level(lvl),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -863,9 +878,9 @@ class ThariBakhoorApp(tk.Tk):
                 height=3,
                 relief="sunken" if i == self.selected_surrounding_speed_value - 1 else "raised",
                 command=lambda idx=i: self.select_surrounding_speed_level(idx),
-                bg="#3d2d22",
+                bg=self.default_btn_bg,
                 fg="#f4e9e1",
-                activebackground="#3d2d22",
+                activebackground=self.default_btn_bg,
                 activeforeground="#f4e9e1"
             )
             btn.grid(row=1, column=i, padx=10, pady=5)
@@ -896,9 +911,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Start",
             command=self.start_surrounding_mode_sequence,
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         save_button.grid(row=1, column=0, padx=(50, 10), pady=(10, 0))
@@ -909,9 +924,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Safe Mode",
             command=self.activate_safe_mode,
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         safe_button.grid(row=1, column=1, padx=10, pady=(10, 0))
@@ -922,9 +937,9 @@ class ThariBakhoorApp(tk.Tk):
             text="Close",
             command=self.show_main_screen_buttons,
             font=("DM Sans", 12),
-            bg="#3d2d22",
+            bg=self.default_btn_bg,
             fg="#f4e9e1",
-            activebackground="#3d2d22",
+            activebackground=self.default_btn_bg,
             activeforeground="#f4e9e1"
         )
         close_button.grid(row=1, column=2, padx=(10, 50), pady=(10, 0))
@@ -932,7 +947,10 @@ class ThariBakhoorApp(tk.Tk):
     def select_surrounding_heat_level(self, level):
         self.selected_surrounding_heat_level = level
         for i, (lvl, _) in enumerate(self.surrounding_heat_levels):
-            self.surrounding_heat_buttons[i].config(relief="sunken" if lvl == level else "raised")
+            if lvl == level:
+                self.surrounding_heat_buttons[i].config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                self.surrounding_heat_buttons[i].config(relief="raised", bg=self.default_btn_bg)
         self.set_surrounding_heat_params_from_level(level)
         self.update_surrounding_time_record_label()
 
@@ -956,8 +974,11 @@ class ThariBakhoorApp(tk.Tk):
 
     def select_surrounding_speed_level(self, idx):
         self.selected_surrounding_speed_value = idx + 1
-        for i in range(len(self.surrounding_speed_buttons)):
-            self.surrounding_speed_buttons[i].config(relief="sunken" if i == idx else "raised")
+        for i, btn in enumerate(self.surrounding_speed_buttons):
+            if i == idx:
+                btn.config(relief="sunken", bg=self.selected_btn_bg)
+            else:
+                btn.config(relief="raised", bg=self.default_btn_bg)
         self.set_surrounding_speed_param_from_value(self.selected_surrounding_speed_value)
         self.update_surrounding_time_record_label()
 
