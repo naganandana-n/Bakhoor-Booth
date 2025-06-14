@@ -349,9 +349,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration (person mode)
@@ -383,9 +382,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -558,9 +556,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_clothes_heat_params_from_level(self, level):
         # Map heat level to x_seconds, y_seconds, heat_duration
@@ -592,9 +589,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_clothes_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_clothes_speed_param_from_value(self, value):
         # value: 1, 2, 3
@@ -987,9 +983,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_surrounding_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_surrounding_heat_params_from_level(self, level):
         if level == "Low":
@@ -1020,9 +1015,8 @@ class ThariBakhoorApp(tk.Tk):
         self.update_surrounding_time_record_label()
         # Force immediate UI update so the selected color appears instantly
         self.update_idletasks()
-        # Simulate an extra click on the background to release touch
-        self.after(10, lambda: self.event_generate('<ButtonPress-1>', x=1, y=1))
-        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=1, y=1))
+        # Simulate a release on the background to clear touch state
+        self.after(10, lambda: self.event_generate('<ButtonRelease-1>', x=10, y=10))
 
     def set_surrounding_speed_param_from_value(self, value):
         # value: 1, 2, 3 (index+1)
