@@ -18,6 +18,8 @@ if ENABLE_HARDWARE:
 class ThariBakhoorApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Hide the mouse cursor for touch screen operation
+        self.config(cursor="none")
         self.title("Thari Bakhoor")
         if ENABLE_HARDWARE:
             self.pi = pigpio.pi()
