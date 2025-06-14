@@ -715,11 +715,8 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.6, anchor="center")
-        # Ensure the clothes mode label appears above the button
-        # self.clothes_mode_label.lift()
-        # Send the Safe Mode button directly beneath the clothes_mode_label
-        # safe_button.lower(self.clothes_mode_label)
+        # Center the Safe Mode button in the middle of the screen
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._clothes_mode_flow, daemon=True).start()
@@ -1167,11 +1164,8 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.45, anchor="center")
-        # Ensure the surrounding mode label appears above the button
-        # self.surrounding_mode_label.lift()
-        # Send the Safe Mode button directly beneath the surrounding_mode_label
-        # safe_button.lower(self.surrounding_mode_label)
+        # Center the Safe Mode button in the middle of the screen
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
 
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._surrounding_mode_flow, daemon=True).start()
@@ -1397,12 +1391,8 @@ class ThariBakhoorApp(tk.Tk):
             activeforeground="#f4e9e1"
         )
         # Center the Safe Mode button in the middle of the screen
-        safe_button.place(relx=0.5, rely=0.6, anchor="center")
-        # Ensure the person mode label appears above the button
-        # self.person_mode_label.lift()
-        # Send the Safe Mode button behind other widgets so the label remains visible
-        # safe_button.lower()
-        # safe_button.lower(self.person_mode_label)
+        # Center the Safe Mode button in the middle of the screen
+        safe_button.place(relx=0.5, rely=0.5, anchor="center")
         # Start the controlled flow in a thread to avoid blocking the GUI
         threading.Thread(target=self._person_mode_flow, daemon=True).start()
 
