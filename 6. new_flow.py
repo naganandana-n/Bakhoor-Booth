@@ -778,7 +778,7 @@ class ThariBakhoorApp(tk.Tk):
         self.clothes_speed_end_time = self.clothes_speed_start_time + z
 
         # Heater ON for X seconds (preheat)
-        self._update_clothes_mode_label(f"Preheating... Heater ON for {x}s")
+        self._update_clothes_mode_label(f"Heater ON for {x}s")
         if ENABLE_HARDWARE:
             self.heater_on(self.pi, self.heater_ssr_pin)
         preheat_start = time.time()
@@ -791,7 +791,7 @@ class ThariBakhoorApp(tk.Tk):
             if ENABLE_HARDWARE and not fan_pwm_25_set and elapsed >= 30:
                 self._set_fan_pwm(25)
                 fan_pwm_25_set = True
-            self._update_clothes_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
+            self._update_clothes_mode_label(f"Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
@@ -814,7 +814,7 @@ class ThariBakhoorApp(tk.Tk):
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
-                self._update_clothes_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
+                self._update_clothes_mode_label(f"Time left: {z_remaining}s")
                 # Check temp every 5s
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
@@ -837,7 +837,7 @@ class ThariBakhoorApp(tk.Tk):
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 w_remaining = max(0, w - i)
-                self._update_clothes_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
+                self._update_clothes_mode_label(f"Time left: {z_remaining}s")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
@@ -849,7 +849,7 @@ class ThariBakhoorApp(tk.Tk):
         time.sleep(1)
 
         # 4. At end of Speed timer, run fan at 100% for 3 min, then show 5-min cooldown
-        self._update_clothes_mode_label("Post-cycle: Fan at 100% for 3 min.")
+        self._update_clothes_mode_label("Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
             self._set_fan_pwm(100)
         for i in range(180):
@@ -1197,7 +1197,7 @@ class ThariBakhoorApp(tk.Tk):
         speed_end_time = speed_start_time + z
 
         # Heater ON for X seconds (preheat)
-        self._update_surrounding_mode_label(f"Preheating... Heater ON for {x}s")
+        self._update_surrounding_mode_label(f"Heater ON for {x}s")
         if ENABLE_HARDWARE:
             self._set_fan_pwm(10)
             self.heater_on(self.pi, self.heater_ssr_pin)
@@ -1211,7 +1211,7 @@ class ThariBakhoorApp(tk.Tk):
             if ENABLE_HARDWARE:
                 if time.time() - preheat_start > 60:
                     self._set_fan_pwm(25)
-            self._update_surrounding_mode_label(f"Preheating... Heater ON. {seconds_left}s left")
+            self._update_surrounding_mode_label(f"Heater ON. {seconds_left}s left")
             time.sleep(1)
         if ENABLE_HARDWARE:
             self.heater_off(self.pi, self.heater_ssr_pin)
@@ -1236,7 +1236,7 @@ class ThariBakhoorApp(tk.Tk):
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 y_remaining = max(0, y - i)
                 # Update UI with ON phase
-                self._update_surrounding_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
+                self._update_surrounding_mode_label(f"Time left: {z_remaining}s")
                 # Check temp every 5s
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
@@ -1260,7 +1260,7 @@ class ThariBakhoorApp(tk.Tk):
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 w_remaining = max(0, w - i)
-                self._update_surrounding_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
+                self._update_surrounding_mode_label(f"Time left: {z_remaining}s")
                 # Check temp every 5s during OFF as well
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
@@ -1276,7 +1276,7 @@ class ThariBakhoorApp(tk.Tk):
         time.sleep(1)
 
         # 4. At end of Speed timer, run fan at 100% for 3 min, then show 5-min cooldown
-        self._update_surrounding_mode_label("Post-cycle: Fan at 100% for 3 min.")
+        self._update_surrounding_mode_label("Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
             self._set_fan_pwm(100)
         for i in range(180):
@@ -1427,7 +1427,7 @@ class ThariBakhoorApp(tk.Tk):
         # 1. Lock the door immediately
         if ENABLE_HARDWARE:
             self.pi.write(self.door_ssr_pin, 1)
-        self._update_person_mode_label("Door locked. Preheating...")
+        self._update_person_mode_label("Door locked.")
 
         # 2. Turn on heater and start X timer (preheat)
         if ENABLE_HARDWARE:
@@ -1451,7 +1451,7 @@ class ThariBakhoorApp(tk.Tk):
                 self.set_fan_pwm(self.pi, self.fan_gpio_pin, 25)
                 fan_pwm_25_set = True
             if preheat_elapsed < 30:
-                self._update_person_mode_label(f"Preheating... {seconds_left}s left. Door unlocks in {30-preheat_elapsed}s")
+                self._update_person_mode_label(f"Door unlocks in {30-preheat_elapsed}s")
                 time.sleep(1)
                 continue
             # Unlock the door at 30s if not already unlocked
@@ -1503,7 +1503,7 @@ class ThariBakhoorApp(tk.Tk):
                     time.sleep(1)
                     continue
             # If already detected, just continue X timer
-            self._update_person_mode_label(f"Preheating... ({seconds_left}s left)")
+            self._update_person_mode_label(f"Preheating: ({seconds_left}s left)")
             time.sleep(1)
         # End of X timer: heater OFF
         if ENABLE_HARDWARE:
@@ -1528,7 +1528,7 @@ class ThariBakhoorApp(tk.Tk):
                 # Fan logic: after 60s since speed_start_time, ensure 25%
                 if ENABLE_HARDWARE and (time.time() - speed_start_time) >= 60:
                     self.set_fan_pwm(self.pi, self.fan_gpio_pin, 25)
-                self._update_person_mode_label(f"HEATER ON | Z: {z_remaining}s | Y: {y_remaining}s")
+                self._update_person_mode_label(f"Time left: {z_remaining}s")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
@@ -1549,7 +1549,7 @@ class ThariBakhoorApp(tk.Tk):
                     break
                 z_remaining = max(0, int(speed_end_time - time.time()))
                 w_remaining = max(0, w - i)
-                self._update_person_mode_label(f"HEATER OFF | Z: {z_remaining}s | W: {w_remaining}s")
+                self._update_person_mode_label(f"Time left: {z_remaining}s")
                 if (time.time() - last_temp_check) >= 5:
                     temp = self._get_temp_value()
                     last_temp_check = time.time()
@@ -1563,7 +1563,7 @@ class ThariBakhoorApp(tk.Tk):
         time.sleep(1)
 
         # 5. FAN CONTROL: After speed timer ends, run fan at 100% PWM for 3 min, then 5-min cooldown
-        self._update_person_mode_label("Post-cycle: Fan at 100% for 3 min.")
+        self._update_person_mode_label("Fan at 100% for 3 min.")
         if ENABLE_HARDWARE:
             self.set_fan_pwm(self.pi, self.fan_gpio_pin, 100)
         for i in range(180):
